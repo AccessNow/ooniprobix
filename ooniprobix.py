@@ -26,7 +26,8 @@ class ProbixMainWindow(wx.Frame):
 		self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
 		self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
 	
-		self.control = wx.TextCtrl(self, style = wx.TE_MULTILINE)
+		self.report_data = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY)
+#		self.report_data.SetStyle(wx.TextAttr(wx.T)
 
 		self.Show(True)
 
@@ -46,7 +47,7 @@ class ProbixMainWindow(wx.Frame):
 			self.dirname = dig.GetDirectory()
 			f = open(os.path.join(self.dirname,self.filename),'r')
 			self.yfile = yaml.safe_load_all(f)
-			self.control.SetValue(f.read())
+			self.report_data.SetValue(f.read())
 			f.close()
 		dig.Destroy()		
 
