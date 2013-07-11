@@ -36,6 +36,11 @@ def walk_list(lst,tabs):
 			walk_list(l,tabs+1)
 		else:
 			pass
+#			if type(l) is str:
+#				if len(l) < 100:
+#					print '\t' * tabs + l
+#			else:
+#				print '\t' * tabs + l
 
 for report_entry in yamloo:
 	ks = report_entry.keys()
