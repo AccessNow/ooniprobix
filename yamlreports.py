@@ -90,16 +90,18 @@ class YAMLReportTree(wx.TreeCtrl):
 
 	# TO-DO: For purposes of this version, a node n "has children" if it is of
 	# type dict and if len(n) > 0.  We'll handle lists later
+	# REQUIRE: parent is a dict with at least one key 
 	def EnumerateChildren(self,wx_parent,parent):
-		if wx_parent.
 			parent_keys = parent.keys()
 			for key in parent_keys:
-				child = self.AppendItem(wx_parent,parent[key])
+				child = self.AppendItem(self,parent=wx_parent,text=key,data=TreeItemData(parent[key]))
 				if type(parent[key]) is type(parent[key]) is dict or type(parent[key]) is list or type(parent[key]) is set:
 					self.SetItemHasChildren(child, len(parent[key]) > 0)
 				else:
 					self.SetItemHasChildren(child, False)
-			
+	
+	def OnItemActivated(self,event):
+		
 
 	def OnExpandItem(self,event):
 		pass
