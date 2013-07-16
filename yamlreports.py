@@ -69,21 +69,13 @@ for report_entry in yamloo:
 f.close()
 
 class YAMLReportTree(wx.TreeCtrl):
-	def __init__(self, yreport):
+	def __init__(self):
 		super(YAMLReportTree, self).__init__(*args, **kwargs)
-		self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandItem)
-		self.Bind(wx.EVT_TREE_ITEM_COLLAPSING,self.OnCollapseItem)
+#		self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandItem)
+#		self.Bind(wx.EVT_TREE_ITEM_COLLAPSING,self.OnCollapseItem)
 		self.Bind(wx.EVT_TREE_ITEM_ACTIVATED,self.OnItemActivated)
 		self.__collapsing = False
 
-		#TO-DO: Change this to the name of the test, maybe with timestamp
-		self.root = self.AddRoot(yreport.report_header['test_name'])
-		self.SetItemHasChildren(root)
-
-		for entry in yreport.report_entries:
-			tree_entry = self.AppendItem(root,entry)	
-			self.SetItemHasChildren(tree_entry,False)
-#			EnumerateChildren(tree_entry,entry)
 
 	# Given a parent node, enumerate its children, noting whether or not
 	# those children have child nodes too
@@ -91,6 +83,18 @@ class YAMLReportTree(wx.TreeCtrl):
 	# TO-DO: For purposes of this version, a node n "has children" if it is of
 	# type dict and if len(n) > 0.  We'll handle lists later
 	# REQUIRE: parent is a dict with at least one key 
+
+	def LoadYReport(self,yreport):
+		#TO-DO: Change this to the name of the test, maybe with timestamp
+		self.root = self.AddRoot(yreport.report_header['test_name'])
+		self.SetItemHasChildren(root)
+
+		for entry in yreport.report_entries:
+			tree_entry = self.AppendItem(root,wx.TreeItemData(entry))	
+			self.SetItemHasChildren(tree_entry,False)
+#			EnumerateChildren(tree_entry,entry)
+
+
 	def EnumerateChildren(self,wx_parent,parent):
 			parent_keys = parent.keys()
 			for key in parent_keys:
@@ -101,6 +105,10 @@ class YAMLReportTree(wx.TreeCtrl):
 					self.SetItemHasChildren(child, False)
 	
 	def OnItemActivated(self,event):
+		thing_to_print = str(self.GetPyData(event.GetItem()))
+                dig = wx.MessageDialog(self, thing_to_print)
+                dig.ShowModal()
+                dig.Destroy()
 		
 
 	def OnExpandItem(self,event):
