@@ -42,6 +42,16 @@ def walk_list(lst,tabs):
 					print '\t' * tabs + l
 			else:
 				print '\t' * tabs + l
+class YAMLReport():
+	def __init__(self, filename):
+		f = open(filename,'r')
+		yamloo = yaml.safe_load_all(f)
+		self.report_header = yamloo.next()
+		self.report_entries = []
+		for entry in yamloo:
+			self.report_entries.append(entry)
+		
+
 
 for report_entry in yamloo:
 	ks = report_entry.keys()
@@ -59,31 +69,54 @@ for report_entry in yamloo:
 f.close()
 
 class YAMLReportTree(wx.TreeCtrl):
-	def __init__(self, header, entry):
+	def __init__(self, yreport):
 		super(YAMLReportTree, self).__init__(*args, **kwargs)
 		self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandItem)
 		self.Bind(wx.EVT_TREE_ITEM_COLLAPSING,self.OnCollapseItem)
+		self.Bind(wx.EVT_TREE_ITEM_ACTIVATED,self.OnItemActivated)
 		self.__collapsing = False
 
 		#TO-DO: Change this to the name of the test, maybe with timestamp
-		root = self.AddRoot('root')
+		self.root = self.AddRoot(yreport.report_header['test_name'])
 		self.SetItemHasChildren(root)
 
+		for entry in yreport.report_entries:
+			tree_entry = self.AppendItem(root,entry)	
+			self.SetItemHasChildren(tree_entry,False)
+#			EnumerateChildren(tree_entry,entry)
+
+	# Given a parent node, enumerate its children, noting whether or not
+	# those children have child nodes too
+
+	# TO-DO: For purposes of this version, a node n "has children" if it is of
+	# type dict and if len(n) > 0.  We'll handle lists later
+	def EnumerateChildren(self,wx_parent,parent):
+		if wx_parent.
+			parent_keys = parent.keys()
+			for key in parent_keys:
+				child = self.AppendItem(wx_parent,parent[key])
+				if type(parent[key]) is type(parent[key]) is dict or type(parent[key]) is list or type(parent[key]) is set:
+					self.SetItemHasChildren(child, len(parent[key]) > 0)
+				else:
+					self.SetItemHasChildren(child, False)
+			
+
 	def OnExpandItem(self,event):
-		item = self.Append(
+		pass
 
 	def OnCollapseItem(self,event):
-		if self.__collapsing:
-			event.Veto()
-		else:
-			self.__collapsing = True
-			item = event.GetItem()
-			self.CollapseAndReset(item)
-			self.SetItemHasChildren(item)
-			self.__collapsing = False
+		pass
+#		if self.__collapsing:
+#			event.Veto()
+#		else:
+#			self.__collapsing = True
+#			item = event.GetItem()
+#			self.CollapseAllChildren(item)
+#			self.SetItemHasChildren(item)
+#			self.__collapsing = False
 
 class YAMLReportTreeFrame(wx.Frame()):
 	def __init__(self, *args, **kwargs):
 		super(YAMLReportTreeFrame, self).__init__(*args, **kwargs)
-		self.__tree = YAMLReportTreeFrame(self)
+		self.__tree = YAMLReportTree(self)
 		
