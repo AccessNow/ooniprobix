@@ -115,8 +115,37 @@ class ProbixMainWindow(wx.Frame):
 	def LoadRecursiveDict(self,parent,child_dict):
 		ckeys = child_dict.keys()
 		for k in ckeys:
-			i = self.report_tree.AppendItem(parent,k)
-			self.report_tree.SetPyData(i,(child_dict[k],False))
+			if (type(child_dict[k]) is list or type(child_dict[k]) is set) and len(child_dict[k]) >= 1:
+				i = self.report_tree.AppendItem(parent,k)
+				self.report_tree.SetPyData(i,('nested data', False))	
+				self.report_tree.SetItemHasChildren(i)
+				self.LoadRecursiveCollection(i,child_dict[k])
+			elif type(child_dict[k]) is dict and len(child_dict[k]) >= 1:	
+				item = self.report_tree.AppendItem(parent,k)
+				self.report_tree.SetPyData(item,('nested data', False))
+				self.report_tree.SetItemHasChildren(item)
+				self.LoadRecursiveDict(item,child_dict[k])
+			else:
+				i = self.report_tree.AppendItem(parent,k)
+				self.report_tree.SetPyData(i,(child_dict[k],False))
+
+	def LoadRecursiveCollection(self,parent,child_clct):
+		for datum in child_clct:
+			if (type(datum) is list or type(datum) is set) and len(datum) >= 1:
+				i = self.report_tree.AppendItem(parent,'nested data')
+				self.report_tree.SetPyData(i,(datum, False))	
+				self.report_tree.SetItemHasChildren(i)
+				self.LoadRecursiveCollection(i,datum)
+			elif type(datum) is dict and len(datum) >= 1:	
+				#Problem: Collection --> dict without handy key
+#				print 'Datum: ' + str(datum)
+				item = self.report_tree.AppendItem(parent,'nested data')
+				self.report_tree.SetPyData(item,(datum, False))
+				self.report_tree.SetItemHasChildren(item)
+				self.LoadRecursiveDict(item,datum)
+			else:
+				i = self.report_tree.AppendItem(parent,datum)
+				self.report_tree.SetPyData(i,(datum,False))
 
 
 	def OnKeyClick(self,event):
