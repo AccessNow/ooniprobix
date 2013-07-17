@@ -2,7 +2,7 @@ import wx
 import yaml
 import os
 
-from yamlreports import *
+#from yamlreports import *
 
 authors = "Peter Bourgelais"
 version_number = "0.0.2"
@@ -17,16 +17,53 @@ class YAMLReport():
                         self.report_entries.append(entry)
 		f.close()
 
+#        def LoadYReport(self,yreport):
+#                #TO-DO: Change this to the name of the test, maybe with timestamp
+#                self.root = self.AddRoot(yreport.report_header['test_name'])
+#                self.SetItemHasChildren(root)
+#
+#                for entry in yreport.report_entries:
+#                        tree_entry = self.AppendItem(root,wx.TreeItemData(entry))
+#			self.report_tree.SetPyData(tree_entry,(self.yfile.report_header[header_key],False))
+#                        self.SetItemHasChildren(tree_entry,False)
+#                       EnumerateChildren(tree_entry,entry)
+
+
+#        def EnumerateChildren(self,wx_parent,parent):
+#                        parent_keys = parent.keys()
+#                        for key in parent_keys:
+#                                child = self.AppendItem(self,parent=wx_parent,text=key)
+				
+#                                if type(parent[key]) is type(parent[key]) is dict or type(parent[key]) is list $
+#                                        self.SetItemHasChildren(child, len(parent[key]) > 0)
+#                                else:
+#                                        self.SetItemHasChildren(child, False)
+
+
 class ProbixMainWindow(wx.Frame):
 	def __init__(self, parent, title):
 		wx.Frame.__init__(self,parent,title=title,size=(800,600))
 		
 		#TO-DO: Figure out how to handle the sizers for this and the 
 		#text field
-		self.report_tree = wx.TreeCtrl(self, size=(200, 600))
-		self.root = self.report_tree.AddRoot('Report Entries')
+		self.report_tree = wx.TreeCtrl(self)
+		self.report_root = self.report_tree.AddRoot('Report Hierarchy')
+		self.header_root = self.report_tree.AppendItem(self.report_root,'Report Headers')
+		self.entry_root = self.report_tree.AppendItem(self.report_root,'Report Entries')
+		self.report_tree.SetItemHasChildren(self.header_root)
+		self.report_tree.SetItemHasChildren(self.entry_root)
 
 		self.report_data = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY)
+
+		#Let's size this up *badumtish*
+		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.sizer.Add(self.report_tree,1,wx.EXPAND | wx.ALIGN_LEFT)
+		self.sizer.Add(self.report_data,3,wx.EXPAND)
+		
+		self.SetSizer(self.sizer)
+		self.SetAutoLayout(1)
+		self.sizer.Fit(self)
+		self.Show()
 
 		#TO-DO: Will need for basic logging
 		self.CreateStatusBar()
@@ -44,7 +81,7 @@ class ProbixMainWindow(wx.Frame):
 		self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
 		self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
 		self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
-		self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_data)	
+		self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)	
 
 		self.Show(True)
 
@@ -56,12 +93,39 @@ class ProbixMainWindow(wx.Frame):
 	def OnExit(self, e):
 		self.Close(True)
 
-	def LoadReportTree(self):
-		for header in self.yfile.report_headers:
-			self.report_tree.AppendItem(self.root, header.keys()[0], data=wx.TreeItemData(header[header.keys()[0]]))
+	def LoadHeaderTree(self):
+		header_keys = self.yfile.report_header.keys()
+		for header_key in header_keys:
+			data = self.yfile.report_header[header_key]
+			item = self.report_tree.AppendItem(self.header_root, header_key)
+			if (type(data) is dict) and len(data) >= 1:
+				self.report_tree.SetItemHasChildren(item)
+				self.report_tree.SetPyData(item,('nested data',False))
+				self.LoadRecursiveDict(item,data)
+			else:
+				self.report_tree.SetPyData(item,(self.yfile.report_header[header_key],False))
+	
+	def LoadEntryTree(self):
+		for entry in self.yfile.report_entries:
+			item = self.report_tree.AppendItem(self.entry_root,'Test Case')
+			self.report_tree.SetPyData(item,('nested data', False))
+			self.report_tree.SetItemHasChildren(item)
+			self.LoadRecursiveDict(item,entry)
+
+	def LoadRecursiveDict(self,parent,child_dict):
+		ckeys = child_dict.keys()
+		for k in ckeys:
+			i = self.report_tree.AppendItem(parent,k)
+			self.report_tree.SetPyData(i,(child_dict[k],False))
+
 
 	def OnKeyClick(self,event):
-		print 'Value: ' + str(self.report_tree.GetPyData(event.GetItem()))
+		val = self.report_tree.GetPyData(event.GetItem())[0]
+		if type(val) is str:
+			self.report_data.SetValue(self.report_tree.GetPyData(event.GetItem())[0])
+		else:
+			self.report_data.SetValue(str(self.report_tree.GetPyData(event.GetItem())[0]))
+
 
 	def OnOpen(self,e):
 		self.dirname = ""
@@ -72,8 +136,9 @@ class ProbixMainWindow(wx.Frame):
 			self.yfile = YAMLReport(os.path.join(self.dirname,self.filename))
 #			self.reportTree.LoadReport(self.yfile)
 #			self.report_data.SetValue(f.read())
-			f.close()
-			self.LoadReportTree()
+#			f.close()
+			self.LoadHeaderTree()
+			self.LoadEntryTree()
 		dig.Destroy()		
 
 app = wx.App(False)
