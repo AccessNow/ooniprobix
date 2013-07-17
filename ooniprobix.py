@@ -58,7 +58,7 @@ class ProbixMainWindow(wx.Frame):
 		#Let's size this up *badumtish*
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.sizer.Add(self.report_tree,1,wx.EXPAND | wx.ALIGN_LEFT)
-		self.sizer.Add(self.report_data,3,wx.EXPAND)
+		self.sizer.Add(self.report_data,2.75,wx.EXPAND)
 		
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)

@@ -1,0 +1,3 @@
+PyYAML==3.10
+wxPython==2.8.12.1
+wxPython-common==2.8.12.1
