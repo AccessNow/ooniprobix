@@ -5,13 +5,14 @@ import os
 #from yamlreports import *
 
 authors = "Peter Bourgelais"
-version_number = "0.0.2"
+version_number = "0.0.3"
 
 class YAMLReport():
         def __init__(self, filename):
                 f = open(filename,'r')
                 yamloo = yaml.safe_load_all(f)
-                self.report_header = yamloo.next()
+                self.report_name = filename
+		self.report_header = yamloo.next()
                 self.report_entries = []
                 for entry in yamloo:
                         self.report_entries.append(entry)
@@ -59,28 +60,34 @@ class ProbixMainWindow(wx.Frame):
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.sizer.Add(self.report_tree,1,wx.EXPAND | wx.ALIGN_LEFT)
 		self.sizer.Add(self.report_data,2.75,wx.EXPAND | wx.ALIGN_RIGHT)
-#		self.panel = wx.Panel(self,wx.ID_ANY)		
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		self.sizer.Fit(self)
-		self.Show()
 
 		#TO-DO: Will need for basic logging
 		self.CreateStatusBar()
 
+		#Setup for "File" in menu bar
 		filemenu = wx.Menu()
 		menuAbout = filemenu.Append(wx.ID_ABOUT,"&About","About OONIProbix")
 		menuOpen = filemenu.Append(wx.ID_OPEN,"&Open","Open an OONIProbe report")
 		filemenu.AppendSeparator()
 		menuExit = filemenu.Append(wx.ID_EXIT,"&Exit","Exit OONIProbix")
 		
+
+		#Setup for "Options in menu bar
+		optionsmenu = wx.Menu()
+		menuFilterEntriesOnField = optionsmenu.Append(wx.ID_ANY,"&Filter on field(s)","Filter the entries on a specific field or fields")
+
 		menuBar = wx.MenuBar()
 		menuBar.Append(filemenu,"&File")
+		menuBar.Append(optionsmenu,"&Options")
 		self.SetMenuBar(menuBar)
 
 		self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
 		self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
 		self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
+		self.Bind(wx.EVT_MENU, self.OnFilterEntries,menuFilterEntriesOnField)
 		self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)	
 
 		self.Layout()
@@ -93,6 +100,52 @@ class ProbixMainWindow(wx.Frame):
 
 	def OnExit(self, e):
 		self.Close(True)
+
+	def OnFilterEntries(self,e):
+		#TO-DO: Subject this dialog to various and sundry fuzzing tests perhaps?
+		filterDialog = wx.TextEntryDialog(None,'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', style=wx.OK | wx.CANCEL)
+		if filterDialog.ShowModal() == wx.ID_OK:
+			filter = filterDialog.GetValue()
+			filterDialog.Destroy()
+			report = self.GenerateFilteredEntryList(filter)
+			reportDialog = ProbixFilterWindow(self,report)
+
+	#TO-DO: Right now this only filters on fields that are one layer deep
+	#Refactor this to recurse into the structure
+	def GenerateFilteredEntryList(self,filter_text):
+		filtered_list_text = ''
+		list_header = self.filename + '\n'
+		list_header += filter_text + '\n'
+		filtered_list_text += list_header
+		filter_text = filter_text.split(',')
+		#print 'filter_text: ' + str(filter_text)
+		
+		#TO-DO: I can almost hear somebody with a databases background telling me that this is inefficient.
+		#It's open source, man.  If you have a better idea, hack away.
+		for entry in self.yfile.report_entries:
+			if entry:
+				row_text = ''
+				for field in filter_text:
+					try:
+						#If it's the last field we're filtering on, we don't want a comma on the end
+						#TO-DO: Assign entry[field] to a local variable and possibly save a few LOCs
+						if field == filter_text[-1]:
+							row_text += str(entry[field])
+						else:
+								row_text += str(entry[field])
+								row_text += ','	
+					except KeyError:
+						if field == filter_text[-1]:
+							row_text += 'N/A'
+						else:
+							row_text += 'N/A'
+							row_text += ','
+
+					
+				row_text += '\n'
+				filtered_list_text += row_text
+		return filtered_list_text
+			
 
 	def LoadHeaderTree(self):
 		header_keys = self.yfile.report_header.keys()
@@ -172,12 +225,47 @@ class ProbixMainWindow(wx.Frame):
 			self.filename = dig.GetFilename()
 			self.dirname = dig.GetDirectory()
 			self.yfile = YAMLReport(os.path.join(self.dirname,self.filename))
-#			self.reportTree.LoadReport(self.yfile)
-#			self.report_data.SetValue(f.read())
-#			f.close()
 			self.LoadHeaderTree()
 			self.LoadEntryTree()
 		dig.Destroy()		
+
+class ProbixFilterWindow(wx.Frame):
+	def __init__(self,parent,text):
+		wx.Frame.__init__(self,parent,title='OONIProbix - Filtered Report Data',size=(400,600))
+		self.filter_text = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY, size=(400,500))
+		self.filter_report = text
+		#It's called ops_panel because it's where we put the button for various operations we want
+		#to perform on the filtered data
+		self.ops_panel = wx.Panel(self,wx.ID_ANY)
+		self.export_to_csv = wx.Button(self.ops_panel,-1,"Export CSV",(0,0))
+		self.export_to_csv.Bind(wx.EVT_BUTTON,self.OnExportToCSV)
+
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+		self.sizer.Add(self.filter_text,10,wx.EXPAND | wx.ALIGN_TOP)
+		self.sizer.Add(self.ops_panel,1,wx.EXPAND | wx.ALIGN_BOTTOM)
+		self.SetSizer(self.sizer)
+		self.SetAutoLayout(1)
+		self.sizer.Fit(self)
+		self.filter_text.SetValue(text)
+		self.Show(True)
+
+
+	def OnExportToCSV(self,e):
+		dlg = wx.FileDialog(self, "Export to CSV", os.getcwd(),'','*.csv',wx.SAVE|wx.OVERWRITE_PROMPT)		
+		if dlg.ShowModal() == wx.ID_OK:
+			filename = dlg.GetPath()
+	                f = open(filename,'w')
+			f.write(self.filter_report)
+#			self.filename = dig.GetFilename()
+#			self.dirname = dig.GetDirectory()
+#			self.yfile = YAMLReport(os.path.join(self.dirname,self.filename))
+#			self.reportTree.LoadReport(self.yfile)
+#			self.report_data.SetValue(f.read())
+#			f.close()
+#			self.LoadHeaderTree()
+#			self.LoadEntryTree()
+		dlg.Destroy()		
+
 
 app = wx.App(False)
 frame = ProbixMainWindow(None, "OONIProbix " + version_number)
