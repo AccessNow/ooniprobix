@@ -46,20 +46,20 @@ class ProbixMainWindow(wx.Frame):
 		
 		#TO-DO: Figure out how to handle the sizers for this and the 
 		#text field
-		self.report_tree = wx.TreeCtrl(self)
+		self.report_tree = wx.TreeCtrl(self,size=(300,600))
 		self.report_root = self.report_tree.AddRoot('Report Hierarchy')
 		self.header_root = self.report_tree.AppendItem(self.report_root,'Report Headers')
 		self.entry_root = self.report_tree.AppendItem(self.report_root,'Report Entries')
 		self.report_tree.SetItemHasChildren(self.header_root)
 		self.report_tree.SetItemHasChildren(self.entry_root)
 
-		self.report_data = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY)
+		self.report_data = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY, size=(500,600))
 
 		#Let's size this up *badumtish*
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.sizer.Add(self.report_tree,1,wx.EXPAND | wx.ALIGN_LEFT)
-		self.sizer.Add(self.report_data,2.75,wx.EXPAND)
-		
+		self.sizer.Add(self.report_data,2.75,wx.EXPAND | wx.ALIGN_RIGHT)
+#		self.panel = wx.Panel(self,wx.ID_ANY)		
 		self.SetSizer(self.sizer)
 		self.SetAutoLayout(1)
 		self.sizer.Fit(self)
@@ -83,6 +83,7 @@ class ProbixMainWindow(wx.Frame):
 		self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
 		self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)	
 
+		self.Layout()
 		self.Show(True)
 
 	def OnAbout(self, e):
@@ -107,10 +108,15 @@ class ProbixMainWindow(wx.Frame):
 	
 	def LoadEntryTree(self):
 		for entry in self.yfile.report_entries:
-			item = self.report_tree.AppendItem(self.entry_root,'Test Case')
-			self.report_tree.SetPyData(item,('nested data', False))
-			self.report_tree.SetItemHasChildren(item)
-			self.LoadRecursiveDict(item,entry)
+			if entry:
+				if entry['input']:
+					item = self.report_tree.AppendItem(self.entry_root,entry['input'])
+				else:
+					item = self.report_tree.AppendItem(self.entry_root,'Test Case')				
+				self.report_tree.SetPyData(item,('nested data', False))
+				self.report_tree.SetItemHasChildren(item)
+				#print 'Constructing tree for entry ' + entry['input']
+				self.LoadRecursiveDict(item,entry)
 
 	def LoadRecursiveDict(self,parent,child_dict):
 		ckeys = child_dict.keys()
@@ -150,10 +156,13 @@ class ProbixMainWindow(wx.Frame):
 
 	def OnKeyClick(self,event):
 		val = self.report_tree.GetPyData(event.GetItem())[0]
-		if type(val) is str:
-			self.report_data.SetValue(self.report_tree.GetPyData(event.GetItem())[0])
-		else:
-			self.report_data.SetValue(str(self.report_tree.GetPyData(event.GetItem())[0]))
+		val_type = type(self.report_tree.GetPyData(event.GetItem())[0])
+		
+		if val_type is not str and val_type is not unicode:
+			val = str(val)
+		#Just in case we're dealing with an alphabet not easily represented in ASCII
+		#val = unicode(val, 'utf-8')
+		self.report_data.ChangeValue(val)
 
 
 	def OnOpen(self,e):
