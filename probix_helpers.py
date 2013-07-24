@@ -2,8 +2,10 @@ import wx
 import yaml
 import os
 
+from yamlreports import YAMLReport
+
 class ProbixReportWindow(wx.Frame):
-    def __init__(self, parent, title):
+    def __init__(self, parent, title,yaml_file):
         wx.Frame.__init__(self,parent,title=title,size=(800,600))
         
         #TO-DO: Figure out how to handle the sizers for this and the 
@@ -53,6 +55,10 @@ class ProbixReportWindow(wx.Frame):
 
         self.Layout()
         self.Show(True)
+
+        self.yfile = YAMLReport(yaml_file)
+        self.LoadHeaderTree()
+        self.LoadEntryTree()
 
     def OnAbout(self, e):
         dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)

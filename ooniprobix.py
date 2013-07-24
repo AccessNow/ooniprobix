@@ -2,14 +2,13 @@ from yamlreports import YAMLReport
 from probix_helpers import *
 
 authors = "Peter Bourgelais"
-version_number = "0.0.3"
+version_number = "0.0.4"
 
 class ProbixMainWindow(wx.Frame):
     def __init__(self,parent,title):
-        wx.Frame.__init__(self,parent,title=title,size=(500,600))
+        wx.Frame.__init__(self,parent,title=title,size=(500,300))
 
-        self.report_tree = wx.TreeCtrl(self,size=(500,600))
-
+        self.report_tree = wx.TreeCtrl(self,size=(500,300))
         filemenu = wx.Menu()
         menuAbout = filemenu.Append(wx.ID_ABOUT,"&About","About OONIProbix")
         menuOpen = filemenu.Append(wx.ID_OPEN,"&Open Directory","Select a directory of OONIProbe reports")
@@ -36,10 +35,29 @@ class ProbixMainWindow(wx.Frame):
         self.Close(True)
 
     def OnOpenDirectory(self,e):
-        print 'Sanity check for OnOpenDirectory'
+        dd = wx.DirDialog(None, "Select directory to open", "~/", 0, (10, 10), wx.Size(400, 300))
+        if dd.ShowModal() == wx.ID_OK:
+            self.working_directory = dd.GetPath()            
+        dd.Destroy()
+        self.GenerateReportTree(self.working_directory)
+        
+    def GenerateReportTree(self,directory):
+        flist = []
+        for file in os.listdir(directory):
+            if file.endswith(".yamloo"):
+                flist.append(file)
+        #print os.listdir(directory)
+        if len(flist) > 0:
+            #print flist
+            self.report_root = self.report_tree.AddRoot('OONIProbe Report List')
+            for report in flist:
+                #print report
+                report_id = self.report_tree.AppendItem(self.report_root,report)
+                self.report_tree.SetPyData(report_id,report)
         
     def OnKeyClick(self,e):
-        print 'Sanity check for OnKeyClick'
+        val = os.path.join(self.working_directory,self.report_tree.GetPyData(e.GetItem()))
+        ProbixReportWindow(None,"OONIProbix " + version_number,val)
 
 
 

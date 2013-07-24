@@ -42,6 +42,7 @@ def walk_list(lst,tabs):
 					print '\t' * tabs + l
 			else:
 				print '\t' * tabs + l
+				
 class YAMLReport():
 	def __init__(self, filename):
 		f = open(filename,'r')
@@ -51,7 +52,6 @@ class YAMLReport():
 		for entry in yamloo:
 			self.report_entries.append(entry)
 		
-
 
 # for report_entry in yamloo:
 # 	ks = report_entry.keys()
