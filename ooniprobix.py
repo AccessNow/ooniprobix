@@ -42,6 +42,8 @@ class ProbixMainWindow(wx.Frame):
         self.GenerateReportTree(self.working_directory)
         
     def GenerateReportTree(self,directory):
+        if self.report_tree.ItemHasChildren(self.report_tree.GetRootItem()):
+            self.report_tree.DeleteAllItems()
         flist = []
         for file in os.listdir(directory):
             if file.endswith(".yamloo"):
