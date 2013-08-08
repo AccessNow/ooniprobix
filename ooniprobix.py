@@ -12,6 +12,7 @@ class ProbixMainWindow(wx.Frame):
         filemenu = wx.Menu()
         menuAbout = filemenu.Append(wx.ID_ABOUT,"&About","About OONIProbix")
         menuOpen = filemenu.Append(wx.ID_OPEN,"&Open Directory","Select a directory of OONIProbe reports")
+	menuOpenFile = filemenu.Append(wx.ID_OPEN,"&Open File", "Open a specific OONIProbe report")
         filemenu.AppendSeparator()
         menuExit = filemenu.Append(wx.ID_EXIT,"&Exit","Exit OONIProbix")
         menuBar = wx.MenuBar()
@@ -21,6 +22,7 @@ class ProbixMainWindow(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
         self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
         self.Bind(wx.EVT_MENU, self.OnOpenDirectory, menuOpen)
+	self.Bind(wx.EVT_MENU, self.OnOpenReport,menuOpenFile)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)    
         self.Layout()
         self.Show(True)
@@ -41,6 +43,13 @@ class ProbixMainWindow(wx.Frame):
         dd.Destroy()
         self.GenerateReportTree(self.working_directory)
         
+    def OnOpenReport(self,e):
+	fd = wx.FileDialog(self, "Select report to open", "", "", "YAML files (*.yamloo)|*.yamloo", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+	if fd.ShowModal() == wx.ID_OK:
+	        ProbixReportWindow(None,"OONIProbix " + version_number,fd.GetPath())
+	fd.Destroy()
+	
+
     def GenerateReportTree(self,directory):
         if self.report_tree.ItemHasChildren(self.report_tree.GetRootItem()):
             self.report_tree.DeleteAllItems()
