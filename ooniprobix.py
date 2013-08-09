@@ -19,6 +19,8 @@ class ProbixMainWindow(wx.Frame):
         menuBar.Append(filemenu,"&File")    
         self.SetMenuBar(menuBar)
 
+	self.statusBar = self.CreateStatusBar()
+
         self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
         self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
         self.Bind(wx.EVT_MENU, self.OnOpenDirectory, menuOpen)
@@ -46,7 +48,9 @@ class ProbixMainWindow(wx.Frame):
     def OnOpenReport(self,e):
 	fd = wx.FileDialog(self, "Select report to open", "", "", "YAML files (*.yamloo)|*.yamloo", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 	if fd.ShowModal() == wx.ID_OK:
+		self.statusBar.SetStatusText('Loading...')
 	        ProbixReportWindow(None,"OONIProbix " + version_number,fd.GetPath())
+		self.statusBar.SetStatusText('')		
 	fd.Destroy()
 	
 
