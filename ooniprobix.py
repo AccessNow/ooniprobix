@@ -9,6 +9,7 @@ class ProbixMainWindow(wx.Frame):
         wx.Frame.__init__(self,parent,title=title,size=(500,300))
 
         self.report_tree = wx.TreeCtrl(self,size=(500,300))
+<<<<<<< HEAD
         self.fileMenu = wx.Menu()
 	self.optionsMenu = wx.Menu()
 
@@ -29,6 +30,24 @@ class ProbixMainWindow(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnAbout, self.menuAbout)
         self.Bind(wx.EVT_MENU, self.OnExit, self.menuExit)
         self.Bind(wx.EVT_MENU, self.OnOpenDirectory, self.menuOpen)
+=======
+        filemenu = wx.Menu()
+        menuAbout = filemenu.Append(wx.ID_ABOUT,"&About","About OONIProbix")
+        menuOpen = filemenu.Append(wx.ID_OPEN,"&Open Directory","Select a directory of OONIProbe reports")
+	menuOpenFile = filemenu.Append(wx.ID_OPEN,"&Open File", "Open a specific OONIProbe report")
+        filemenu.AppendSeparator()
+        menuExit = filemenu.Append(wx.ID_EXIT,"&Exit","Exit OONIProbix")
+        menuBar = wx.MenuBar()
+        menuBar.Append(filemenu,"&File")    
+        self.SetMenuBar(menuBar)
+
+	self.statusBar = self.CreateStatusBar()
+
+        self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
+        self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
+        self.Bind(wx.EVT_MENU, self.OnOpenDirectory, menuOpen)
+	self.Bind(wx.EVT_MENU, self.OnOpenReport,menuOpenFile)
+>>>>>>> 27034d603323c9e3535d602eda18256020e013a3
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)    
         self.Layout()
         self.Show(True)
@@ -49,8 +68,21 @@ class ProbixMainWindow(wx.Frame):
         dd.Destroy()
         self.GenerateReportTree(self.working_directory,'')
         
+<<<<<<< HEAD
     def GenerateReportTree(self,directory,filterTest):
         #Reset the directory if it already exists
+=======
+    def OnOpenReport(self,e):
+	fd = wx.FileDialog(self, "Select report to open", "", "", "YAML files (*.yamloo)|*.yamloo", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+	if fd.ShowModal() == wx.ID_OK:
+		self.statusBar.SetStatusText('Loading...')
+	        ProbixReportWindow(None,"OONIProbix " + version_number,fd.GetPath())
+		self.statusBar.SetStatusText('')		
+	fd.Destroy()
+	
+
+    def GenerateReportTree(self,directory):
+>>>>>>> 27034d603323c9e3535d602eda18256020e013a3
         if self.report_tree.ItemHasChildren(self.report_tree.GetRootItem()):
             self.report_tree.DeleteAllItems()
             
