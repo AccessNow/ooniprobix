@@ -4,6 +4,34 @@ import os
 
 from yamlreports import YAMLReport
 
+test_catalog = [ 'blocking/dnsconsistency',
+	  'blocking/http_requests',
+	  'blocking/tcpconnect',
+
+	  'experimental/chinatrigger',
+	  'experimental/dns_injection',
+	  'experimental/domclass_collector',
+	  'experimental/http_filtering_bypassing',
+	  'experimental/http_keyword_filtering',
+	  'experimental/http_trix',
+	  'experimental/http_uk_mobile_networks',
+	  'experimental/keyword_filtering',
+	  'experimental/parasitictraceroute',
+	  'experimental/script',
+	  'experimental/squid',
+	  'experimental/tls_handshake',
+
+	  'manipulation/captiveportal',
+	  'manipulation/daphne',
+	  'manipulation/dnsspoof',
+	  'manipulation/http_header_field_manipulation',
+	  'manipulation/http_host',
+	  'manipulation/http_invalid_request_line',
+	  'manipulation/traceroute',
+
+	  'scanning/http_url_list'
+	]
+
 class ProbixReportWindow(wx.Frame):
     def __init__(self, parent, title,yaml_file):
         wx.Frame.__init__(self,parent,title=title,size=(800,600))
