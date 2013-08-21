@@ -181,8 +181,11 @@ class ProbixReportWindow(wx.Frame):
                 self.report_tree.SetItemHasChildren(item)
                 self.LoadRecursiveDict(item,child_dict[k])
             else:
-                i = self.report_tree.AppendItem(parent,k)
-                self.report_tree.SetPyData(i,(child_dict[k],False))
+                i = self.report_tree.AppendItem(parent,k.encode('unicode-escape'))
+		if type(child_dict[k]) is str:
+	                self.report_tree.SetPyData(i,(child_dict[k].encode('unicode-escape'),False))
+		else:	
+	                self.report_tree.SetPyData(i,(child_dict[k],False))
 
     def LoadRecursiveCollection(self,parent,child_clct):
         for datum in child_clct:
@@ -190,6 +193,7 @@ class ProbixReportWindow(wx.Frame):
             if (type(datum) is list or type(datum) is set) and len(datum) >= 1:
                 if val_type is not str and val_type is not unicode:
                     val = str(datum)
+		    val = val.encode('unicode-escape')
                 i = self.report_tree.AppendItem(parent,'nested data')
                 self.report_tree.SetPyData(i,(val, False))    
                 self.report_tree.SetItemHasChildren(i)
@@ -199,13 +203,18 @@ class ProbixReportWindow(wx.Frame):
 #                print 'Datum: ' + str(datum)
                 if val_type is not str and val_type is not unicode:
                     val = str(datum)
+		    val = val.encode('unicode-escape')
                 item = self.report_tree.AppendItem(parent,'nested data')
                 self.report_tree.SetPyData(item,(val, False))
                 self.report_tree.SetItemHasChildren(item)
                 self.LoadRecursiveDict(item,datum)
             else:
-                i = self.report_tree.AppendItem(parent,datum)
-                self.report_tree.SetPyData(i,(datum,False))
+                if type(datum) is str or type(datum) is unicode:
+			i = self.report_tree.AppendItem(parent,datum.encode('unicode-escape'))
+        	        self.report_tree.SetPyData(i,(datum.encode('unicode-escape'),False))	
+		else:
+			i = self.report_tree.AppendItem(parent,datum)
+        	        self.report_tree.SetPyData(i,(datum,False))
 
 
     def OnKeyClick(self,event):
