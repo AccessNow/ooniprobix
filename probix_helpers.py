@@ -181,9 +181,10 @@ class ProbixReportWindow(wx.Frame):
                 self.report_tree.SetItemHasChildren(item)
                 self.LoadRecursiveDict(item,child_dict[k])
             else:
-                i = self.report_tree.AppendItem(parent,k.encode('unicode-escape'))
+                i = self.report_tree.AppendItem(parent,unicode(k.encode('unicode-escape')))
 		if type(child_dict[k]) is str:
-	                self.report_tree.SetPyData(i,(child_dict[k].encode('unicode-escape'),False))
+#	                self.report_tree.SetPyData(i,(unicode(child_dict[k].encode('unicode-escape')),False))
+	                self.report_tree.SetPyData(i,(child_dict[k],False))
 		else:	
 	                self.report_tree.SetPyData(i,(child_dict[k],False))
 
@@ -192,7 +193,7 @@ class ProbixReportWindow(wx.Frame):
             val_type = type(datum)
             if (type(datum) is list or type(datum) is set) and len(datum) >= 1:
                 if val_type is not str and val_type is not unicode:
-                    val = str(datum)
+                    val = unicode(datum)
 		    val = val.encode('unicode-escape')
                 i = self.report_tree.AppendItem(parent,'nested data')
                 self.report_tree.SetPyData(i,(val, False))    
@@ -202,7 +203,7 @@ class ProbixReportWindow(wx.Frame):
                 #Problem: Collection --> dict without handy key
 #                print 'Datum: ' + str(datum)
                 if val_type is not str and val_type is not unicode:
-                    val = str(datum)
+                    val = unicode(datum)
 		    val = val.encode('unicode-escape')
                 item = self.report_tree.AppendItem(parent,'nested data')
                 self.report_tree.SetPyData(item,(val, False))
@@ -210,8 +211,8 @@ class ProbixReportWindow(wx.Frame):
                 self.LoadRecursiveDict(item,datum)
             else:
                 if type(datum) is str or type(datum) is unicode:
-			i = self.report_tree.AppendItem(parent,datum.encode('unicode-escape'))
-        	        self.report_tree.SetPyData(i,(datum.encode('unicode-escape'),False))	
+			i = self.report_tree.AppendItem(parent,unicode(datum.encode('unicode-escape')))
+        	        self.report_tree.SetPyData(i,(unicode(datum.encode('unicode-escape')),False))	
 		else:
 			i = self.report_tree.AppendItem(parent,datum)
         	        self.report_tree.SetPyData(i,(datum,False))
@@ -220,11 +221,12 @@ class ProbixReportWindow(wx.Frame):
     def OnKeyClick(self,event):
         val = self.report_tree.GetPyData(event.GetItem())[0]
         val_type = type(self.report_tree.GetPyData(event.GetItem())[0])
-        
-        if val_type is not str and val_type is not unicode:
-            val = str(val)
+#        print val
+        if val_type is str:
+            val = unicode(val, 'utf-8', errors='replace')
+	else:
+	    val = str(val)
         #Just in case we're dealing with an alphabet not easily represented in ASCII
-        #val = unicode(val, 'utf-8')
         self.report_data.ChangeValue(val)
 
 
