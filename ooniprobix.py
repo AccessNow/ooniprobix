@@ -111,7 +111,9 @@ class ProbixMainWindow(wx.Frame):
 	
     def OnKeyClick(self,e):
         val = os.path.join(self.working_directory,self.report_tree.GetPyData(e.GetItem()))
+	self.statusBar.SetStatusText('Loading...')
         ProbixReportWindow(None,"OONIProbix " + version_number,val)
+	self.statusBar.SetStatusText('')		
 
 
 

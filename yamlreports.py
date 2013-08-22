@@ -7,6 +7,7 @@
 import yaml
 import sys
 import wx
+import time
 
 #print "Opening %s" % sys.argv[1]
 #f = open(sys.argv[1])
@@ -43,15 +44,6 @@ def walk_list(lst,tabs):
 			else:
 				print '\t' * tabs + l
 				
-class YAMLReport():
-	def __init__(self, filename):
-		f = open(filename,'r')
-		yamloo = yaml.safe_load_all(f)
-		self.report_header = yamloo.next()
-		self.report_entries = []
-		for entry in yamloo:
-			self.report_entries.append(entry)
-		
 
 # for report_entry in yamloo:
 # 	ks = report_entry.keys()
@@ -155,7 +147,10 @@ class YAMLReport():
 class YAMLReport():
         def __init__(self, filename):
                 f = open(filename,'r')
+		start_time = time.time()
                 yamloo = yaml.safe_load_all(f)
+		end_time = time.time()
+		print 'Call to yaml.safe_load_all() took %g seconds' % (end_time - start_time)
                 self.report_name = filename
 		self.report_header = yamloo.next()
                 self.report_entries = []

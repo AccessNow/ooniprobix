@@ -1,6 +1,7 @@
 import wx
 import yaml
 import os
+import time
 
 from yamlreports import YAMLReport
 
@@ -32,6 +33,27 @@ test_catalog = [ 'blocking/dnsconsistency',
 	  'scanning/http_url_list'
 	]
 
+def unicode_clean(string):
+	if type(string) is not str or type(string) is not unicode:
+		return string
+	else:
+		return unicode(string,'utf-8',errors='replace').encode('unicode-escape')
+
+
+#class FilterStack():
+#	def __init__(self):
+#		self.stk = []
+#
+#	def key_push(self,k):
+#		self.stk.append(k)
+#
+#	def key_pop(self):
+#		del self.stk[-1]
+#
+#	def dump_stack(self):
+#		print self.stk
+
+
 class ProbixReportWindow(wx.Frame):
     def __init__(self, parent, title,yaml_file):
         wx.Frame.__init__(self,parent,title=title,size=(800,600))
@@ -46,6 +68,8 @@ class ProbixReportWindow(wx.Frame):
         self.report_tree.SetItemHasChildren(self.entry_root)
 
         self.report_data = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY, size=(500,600))
+
+#	self.fstk = FilterStack()
 
         #Let's size this up *badumtish*
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -85,9 +109,12 @@ class ProbixReportWindow(wx.Frame):
         self.Show(True)
 
         self.yfile = YAMLReport(yaml_file)
-        self.LoadHeaderTree()
-        self.LoadEntryTree()
         self.filename = yaml_file
+        start_time = time.clock()
+	self.LoadHeaderTree()
+        self.LoadEntryTree()
+	end_time = time.clock()
+	print 'Parsing took %g seconds' % (end_time - start_time)
 
     def OnAbout(self, e):
         dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
@@ -109,92 +136,139 @@ class ProbixReportWindow(wx.Frame):
     #TO-DO: Right now this only filters on fields that are one layer deep
     #Refactor this to recurse into the structure
     def GenerateFilteredEntryList(self,filter_text):
+	#Generate some headers for the filtered report
+	#We're looking at the name of the text and the schema used
         filtered_list_text = ''
         list_header = self.filename + '\n'
         list_header += filter_text + '\n'
         filtered_list_text += list_header
-        filter_text = filter_text.split(',')
-        #print 'filter_text: ' + str(filter_text)
-        
-        #TO-DO: I can almost hear somebody with a databases background telling me that this is inefficient.
-        #It's open source, man.  If you have a better idea, hack away.
-        for entry in self.yfile.report_entries:
-            if entry:
-                row_text = ''
-                for field in filter_text:
-                    try:
-                        #If it's the last field we're filtering on, we don't want a comma on the end
-                        #TO-DO: Assign entry[field] to a local variable and possibly save a few LOCs
-                        if field == filter_text[-1]:
-                            row_text += str(entry[field])
-                        else:
-                                row_text += str(entry[field])
-                                row_text += ','    
-                    except KeyError:
-                        if field == filter_text[-1]:
-                            row_text += 'N/A'
-                        else:
-                            row_text += 'N/A'
-                            row_text += ','
+	
+	#We want to separate out what is one level down in the entry structure
+	#and what we have to "recurse" to get to
 
-                    
-                row_text += '\n'
-                filtered_list_text += row_text
+	#Think I need to separate recursive and non-recursive fields
+        filter_text = filter_text.split(',')
+
+        for entry in self.yfile.report_entries:
+		if entry:
+			row_text = ''
+			data = entry
+        	        for field in filter_text:
+				if '.' in field:
+					#print 'With field ' + field
+					flist = field.split('.')
+					#print 'flist: ' + str(flist)
+					for rfield in flist:
+						try:
+							#print 'rfield: ' + rfield
+							if rfield.isdigit():
+								rfield=int(rfield)
+							data = data[rfield]		
+						except KeyError:
+		        	        	        if field == filter_text[-1]:
+		                	        		data = 'N/A'
+								break
+	        		        	        else:
+	        	                		        data = 'N/A'
+                	                			data += ','
+								break
+					row_text += str(data)
+				else:
+					try:
+						if field == filter_text[-1]:
+							row_text += str(entry[field])
+						else:
+							row_text += str(entry[field])
+							row_text += ','
+					except KeyError:
+	        	        	        if field == filter_text[-1]:
+	                	        		row_text += 'N/A'
+							
+        		        	        else:
+        	                		        row_text += 'N/A'
+               	                			row_text += ','
+							
+						
+	                row_text += '\n'
+        	        filtered_list_text += row_text
         return filtered_list_text
-            
 
     def LoadHeaderTree(self):
         header_keys = self.yfile.report_header.keys()
         for header_key in header_keys:
             data = self.yfile.report_header[header_key]
-            item = self.report_tree.AppendItem(self.header_root, header_key)
+            item = self.report_tree.AppendItem(self.header_root, unicode_clean(header_key))
             if (type(data) is dict) and len(data) >= 1:
                 self.report_tree.SetItemHasChildren(item)
                 self.report_tree.SetPyData(item,('nested data',False))
-                self.LoadRecursiveDict(item,data)
+#                self.fstk.key_push(header_key)
+#		self.fstk.dump_stack()
+		self.LoadRecursiveDict(item,data)
+#		self.fstk.key_pop()
             else:
-                self.report_tree.SetPyData(item,(self.yfile.report_header[header_key],False))
+#                self.fstk.key_push(header_key)
+#		self.fstk.dump_stack()
+                self.report_tree.SetPyData(item,(unicode_clean(self.yfile.report_header[header_key]),False))
+#		self.fstk.key_pop()
+
     
     def LoadEntryTree(self):
         for entry in self.yfile.report_entries:
             if entry:
                 if entry['input']:
-                    item = self.report_tree.AppendItem(self.entry_root,entry['input'])
+                    item = self.report_tree.AppendItem(self.entry_root,unicode_clean(entry['input']))
+#	            self.fstk.key_push(entry['input'])
                 else:
                     item = self.report_tree.AppendItem(self.entry_root,'Test Case')                
+#	            self.fstk.key_push('Test Case')
                 self.report_tree.SetPyData(item,('nested data', False))
                 self.report_tree.SetItemHasChildren(item)
                 #print 'Constructing tree for entry ' + entry['input']
+#		self.fstk.dump_stack()
                 self.LoadRecursiveDict(item,entry)
+#		self.fstk.key_pop()
+
 
     def LoadRecursiveDict(self,parent,child_dict):
         ckeys = child_dict.keys()
         for k in ckeys:
             if (type(child_dict[k]) is list or type(child_dict[k]) is set) and len(child_dict[k]) >= 1:
-                i = self.report_tree.AppendItem(parent,k)
+                i = self.report_tree.AppendItem(parent,unicode_clean(k))
                 self.report_tree.SetPyData(i,('nested data', False))    
                 self.report_tree.SetItemHasChildren(i)
+#                self.fstk.key_push(k)
+#		self.fstk.dump_stack()
                 self.LoadRecursiveCollection(i,child_dict[k])
+#		self.fstk.key_pop()
             elif type(child_dict[k]) is dict and len(child_dict[k]) >= 1:    
-                item = self.report_tree.AppendItem(parent,k)
+                item = self.report_tree.AppendItem(parent,unicode_clean(k))
                 self.report_tree.SetPyData(item,('nested data', False))
                 self.report_tree.SetItemHasChildren(item)
+#                self.fstk.key_push(k)
+#		self.fstk.dump_stack()
                 self.LoadRecursiveDict(item,child_dict[k])
+#		self.fstk.key_pop()
             else:
-                i = self.report_tree.AppendItem(parent,unicode(k.encode('unicode-escape')))
-		if type(child_dict[k]) is str:
-#	                self.report_tree.SetPyData(i,(unicode(child_dict[k].encode('unicode-escape')),False))
-	                self.report_tree.SetPyData(i,(child_dict[k],False))
+                i = self.report_tree.AppendItem(parent,unicode_clean(k))
+		if type(child_dict[k]) is str or type(child_dict[k]) is unicode:
+	                self.report_tree.SetPyData(i,(unicode_clean(child_dict[k]),False))
+#	                self.fstk.key_push(k)
+#			self.fstk.dump_stack()
+#	                self.report_tree.SetPyData(i,(child_dict[k],False))
+#			self.fstk.key_pop()
 		else:	
-	                self.report_tree.SetPyData(i,(child_dict[k],False))
+#        	        self.fstk.key_push(k)
+#			self.fstk.dump_stack()
+	                self.report_tree.SetPyData(i,(unicode_clean(child_dict[k]),False))
+#			self.fstk.key_pop()
 
     def LoadRecursiveCollection(self,parent,child_clct):
         for datum in child_clct:
             val_type = type(datum)
             if (type(datum) is list or type(datum) is set) and len(datum) >= 1:
-                if val_type is not str and val_type is not unicode:
-                    val = unicode(datum)
-		    val = val.encode('unicode-escape')
+	#	if val_type is not str and val_type is not unicode:
+                val = unicode_clean(datum)
+#		    val = val.encode('unicode-escape')
                 i = self.report_tree.AppendItem(parent,'nested data')
                 self.report_tree.SetPyData(i,(val, False))    
                 self.report_tree.SetItemHasChildren(i)
@@ -202,20 +276,20 @@ class ProbixReportWindow(wx.Frame):
             elif type(datum) is dict and len(datum) >= 1:    
                 #Problem: Collection --> dict without handy key
 #                print 'Datum: ' + str(datum)
-                if val_type is not str and val_type is not unicode:
-                    val = unicode(datum)
-		    val = val.encode('unicode-escape')
+#                if val_type is not str and val_type is not unicode:
+                val = unicode_clean(datum)
+#		    val = val.encode('unicode-escape')
                 item = self.report_tree.AppendItem(parent,'nested data')
                 self.report_tree.SetPyData(item,(val, False))
                 self.report_tree.SetItemHasChildren(item)
                 self.LoadRecursiveDict(item,datum)
             else:
                 if type(datum) is str or type(datum) is unicode:
-			i = self.report_tree.AppendItem(parent,unicode(datum.encode('unicode-escape')))
-        	        self.report_tree.SetPyData(i,(unicode(datum.encode('unicode-escape')),False))	
+			i = self.report_tree.AppendItem(parent,unicode_clean(datum))
+        	        self.report_tree.SetPyData(i,(unicode_clean(datum),False))	
 		else:
-			i = self.report_tree.AppendItem(parent,datum)
-        	        self.report_tree.SetPyData(i,(datum,False))
+			i = self.report_tree.AppendItem(parent,unicode_clean(datum))
+        	        self.report_tree.SetPyData(i,(unicode_clean(datum),False))
 
 
     def OnKeyClick(self,event):
@@ -268,12 +342,4 @@ class ProbixFilterWindow(wx.Frame):
             filename = dlg.GetPath()
             f = open(filename,'w')
             f.write(self.filter_report)
-#            self.filename = dig.GetFilename()
-#            self.dirname = dig.GetDirectory()
-#            self.yfile = YAMLReport(os.path.join(self.dirname,self.filename))
-#            self.reportTree.LoadReport(self.yfile)
-#            self.report_data.SetValue(f.read())
-#            f.close()
-#            self.LoadHeaderTree()
-#            self.LoadEntryTree()
         dlg.Destroy()        
