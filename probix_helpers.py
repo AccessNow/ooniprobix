@@ -110,11 +110,11 @@ class ProbixReportWindow(wx.Frame):
 
         self.yfile = YAMLReport(yaml_file)
         self.filename = yaml_file
-        start_time = time.clock()
+#        start_time = time.clock()
 	self.LoadHeaderTree()
         self.LoadEntryTree()
-	end_time = time.clock()
-	print 'Parsing took %g seconds' % (end_time - start_time)
+#	end_time = time.clock()
+#	print 'Parsing took %g seconds' % (end_time - start_time)
 
     def OnAbout(self, e):
         dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
