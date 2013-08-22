@@ -63,6 +63,7 @@ class ProbixReportWindow(wx.Frame):
         #TO-DO: Figure out how to handle the sizers for this and the 
         #text field
         self.report_tree = wx.TreeCtrl(self,size=(300,600))
+
         self.report_root = self.report_tree.AddRoot('Report Hierarchy')
         self.header_root = self.report_tree.AppendItem(self.report_root,'Report Headers')
         self.entry_root = self.report_tree.AppendItem(self.report_root,'Report Entries')
@@ -119,7 +120,7 @@ class ProbixReportWindow(wx.Frame):
 #	print 'Parsing took %g seconds' % (end_time - start_time)
 
     def OnAbout(self, e):
-        dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
+        dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
         dig.ShowModal()
         dig.Destroy()
 

@@ -90,7 +90,7 @@ class ProbixMainWindow(wx.Frame):
 	fd = wx.FileDialog(self, "Select report to open", "", "", "YAML files (*.yamloo)|*.yamloo", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 	if fd.ShowModal() == wx.ID_OK:
 		self.statusBar.SetStatusText('Loading...')
-	        ProbixReportWindow(None,"OONIProbix " + version_number,fd.GetPath())
+	        ProbixReportWindow(None,os.path.basename(fd.GetPath()) + " - OONIProbix " + version_number,fd.GetPath())
 		self.statusBar.SetStatusText('')		
 	fd.Destroy()
 	
