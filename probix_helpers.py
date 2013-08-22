@@ -269,7 +269,7 @@ class ProbixReportWindow(wx.Frame):
 	#	if val_type is not str and val_type is not unicode:
                 val = unicode_clean(datum)
 #		    val = val.encode('unicode-escape')
-                i = self.report_tree.AppendItem(parent,'nested data')
+                i = self.report_tree.AppendItem(parent,str(child_clct.index(datum)))
                 self.report_tree.SetPyData(i,(val, False))    
                 self.report_tree.SetItemHasChildren(i)
                 self.LoadRecursiveCollection(i,datum)
@@ -279,7 +279,7 @@ class ProbixReportWindow(wx.Frame):
 #                if val_type is not str and val_type is not unicode:
                 val = unicode_clean(datum)
 #		    val = val.encode('unicode-escape')
-                item = self.report_tree.AppendItem(parent,'nested data')
+                item = self.report_tree.AppendItem(parent,str(child_clct.index(datum)))
                 self.report_tree.SetPyData(item,(val, False))
                 self.report_tree.SetItemHasChildren(item)
                 self.LoadRecursiveDict(item,datum)

@@ -150,7 +150,7 @@ class YAMLReport():
 		start_time = time.time()
                 yamloo = yaml.safe_load_all(f)
 		end_time = time.time()
-		print 'Call to yaml.safe_load_all() took %g seconds' % (end_time - start_time)
+		#print 'Call to yaml.safe_load_all() took %g seconds' % (end_time - start_time)
                 self.report_name = filename
 		self.report_header = yamloo.next()
                 self.report_entries = []
