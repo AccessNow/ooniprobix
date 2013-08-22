@@ -1,7 +1,7 @@
 import wx
 import yaml
 import os
-import time
+#import time
 
 from yamlreports import YAMLReport
 
@@ -34,10 +34,12 @@ test_catalog = [ 'blocking/dnsconsistency',
 	]
 
 def unicode_clean(string):
-	if type(string) is not str or type(string) is not unicode:
-		return string
-	else:
+	if type(string) is str:
 		return unicode(string,'utf-8',errors='replace').encode('unicode-escape')
+	if type(string) is unicode:
+		return string.encode('unicode-escape')
+	else:
+		return string
 
 
 #class FilterStack():
