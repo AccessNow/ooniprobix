@@ -6,7 +6,7 @@ version_number = "0.0.4"
 
 class ProbixMainWindow(wx.Frame):
     def __init__(self,parent,title):
-        wx.Frame.__init__(self,parent,title=title,size=(500,300))
+        wx.Frame.__init__(self,parent,title=title,size=(600,300))
 
         self.report_tree = wx.TreeCtrl(self,size=(500,300))
         self.fileMenu = wx.Menu()
