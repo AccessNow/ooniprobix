@@ -114,7 +114,7 @@ class ProbixReportWindow(wx.Frame):
         self.yfile = YAMLReport(yaml_file)
         self.filename = yaml_file
 #        start_time = time.clock()
-	self.LoadHeaderTree()
+        self.LoadHeaderTree()
         self.LoadEntryTree()
 #	end_time = time.clock()
 #	print 'Parsing took %g seconds' % (end_time - start_time)
@@ -153,47 +153,44 @@ class ProbixReportWindow(wx.Frame):
         filter_text = filter_text.split(',')
 
         for entry in self.yfile.report_entries:
-		if entry:
-			row_text = ''
-			data = entry
-        	        for field in filter_text:
-				if '.' in field:
-					#print 'With field ' + field
-					flist = field.split('.')
-					#print 'flist: ' + str(flist)
-					for rfield in flist:
-						try:
-							#print 'rfield: ' + rfield
-							if rfield.isdigit():
-								rfield=int(rfield)
-							data = data[rfield]		
-						except KeyError:
-		        	        	        if field == filter_text[-1]:
-		                	        		data = 'N/A'
-								break
-	        		        	        else:
-	        	                		        data = 'N/A'
-                	                			data += ','
-								break
-					row_text += str(data)
-				else:
-					try:
-						if field == filter_text[-1]:
-							row_text += str(entry[field])
-						else:
-							row_text += str(entry[field])
-							row_text += ','
-					except KeyError:
-	        	        	        if field == filter_text[-1]:
-	                	        		row_text += 'N/A'
-							
-        		        	        else:
-        	                		        row_text += 'N/A'
-               	                			row_text += ','
-							
-						
-	                row_text += '\n'
-        	        filtered_list_text += row_text
+            if entry:
+                row_text = ''
+                data = entry
+                for field in filter_text:
+                    if '.' in field:
+                        #print 'With field ' + field
+                        flist = field.split('.')
+                        #print 'flist: ' + str(flist)
+                        for rfield in flist:
+                            try:
+                                #print 'rfield: ' + rfield
+                                if rfield.isdigit():
+                                    rfield=int(rfield)
+                                    data = data[rfield]		
+                            except KeyError:
+                                if field == filter_text[-1]:
+                                    data = 'N/A'
+                                    break
+                                else:
+                                    data = 'N/A'
+                                    data += ','
+                                    break
+                            row_text += str(data)
+                    else:
+                        try:
+                            if field == filter_text[-1]:
+                                row_text += str(entry[field])
+                            else:
+                                row_text += str(entry[field])
+                                row_text += ','
+                        except KeyError:
+                            if field == filter_text[-1]:
+                                row_text += 'N/A'
+                            else:
+                                row_text += 'N/A'
+                                row_text += ','
+	            row_text += '\n'
+                filtered_list_text += row_text
         return filtered_list_text
 
     def LoadHeaderTree(self):
@@ -253,16 +250,16 @@ class ProbixReportWindow(wx.Frame):
 #		self.fstk.key_pop()
             else:
                 i = self.report_tree.AppendItem(parent,unicode_clean(k))
-		if type(child_dict[k]) is str or type(child_dict[k]) is unicode:
-	                self.report_tree.SetPyData(i,(unicode_clean(child_dict[k]),False))
+                if type(child_dict[k]) is str or type(child_dict[k]) is unicode:
+                    self.report_tree.SetPyData(i,(unicode_clean(child_dict[k]),False))
 #	                self.fstk.key_push(k)
 #			self.fstk.dump_stack()
 #	                self.report_tree.SetPyData(i,(child_dict[k],False))
 #			self.fstk.key_pop()
-		else:	
+                else:	
 #        	        self.fstk.key_push(k)
 #			self.fstk.dump_stack()
-	                self.report_tree.SetPyData(i,(unicode_clean(child_dict[k]),False))
+                    self.report_tree.SetPyData(i,(unicode_clean(child_dict[k]),False))
 #			self.fstk.key_pop()
 
     def LoadRecursiveCollection(self,parent,child_clct):
@@ -288,10 +285,10 @@ class ProbixReportWindow(wx.Frame):
                 self.LoadRecursiveDict(item,datum)
             else:
                 if type(datum) is str or type(datum) is unicode:
-			i = self.report_tree.AppendItem(parent,unicode_clean(datum))
+                	i = self.report_tree.AppendItem(parent,unicode_clean(datum))
         	        self.report_tree.SetPyData(i,(unicode_clean(datum),False))	
-		else:
-			i = self.report_tree.AppendItem(parent,unicode_clean(datum))
+		        else:
+			        i = self.report_tree.AppendItem(parent,unicode_clean(datum))
         	        self.report_tree.SetPyData(i,(unicode_clean(datum),False))
 
 
@@ -301,10 +298,10 @@ class ProbixReportWindow(wx.Frame):
 #        print val
         if val_type is str:
             val = unicode(val, 'utf-8', errors='replace')
-	else:
-	    val = str(val)
+        else:
+	        val = str(val)
         #Just in case we're dealing with an alphabet not easily represented in ASCII
-        self.report_data.ChangeValue(val)
+            self.report_data.ChangeValue(val)
 
 
     def OnOpen(self,e):

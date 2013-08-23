@@ -147,13 +147,13 @@ def walk_list(lst,tabs):
 class YAMLReport():
         def __init__(self, filename):
                 f = open(filename,'r')
-		start_time = time.time()
+                start_time = time.time()
                 yamloo = yaml.safe_load_all(f)
-		end_time = time.time()
+                end_time = time.time()
 		#print 'Call to yaml.safe_load_all() took %g seconds' % (end_time - start_time)
                 self.report_name = filename
-		self.report_header = yamloo.next()
+                self.report_header = yamloo.next()
                 self.report_entries = []
                 for entry in yamloo:
                         self.report_entries.append(entry)
-		f.close()
+                f.close()
