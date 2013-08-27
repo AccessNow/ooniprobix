@@ -5,6 +5,8 @@ import os
 
 from yamlreports import YAMLReport
 
+version_number = '0.0.4'
+
 test_catalog = [ 'blocking/dnsconsistency',
 	  'blocking/http_requests',
 	  'blocking/tcpconnect',
@@ -55,14 +57,88 @@ def unicode_clean(string):
 #	def dump_stack(self):
 #		print self.stk
 
+class ProbixMainFrame(wx.Frame):
+    def __init__(self,parent,report):
+        wx.Frame.__init__(self,parent,title="OONIProbix",size=(900,700))
 
-class ProbixReportWindow(wx.Frame):
+        filemenu = wx.Menu()
+        menuAbout = filemenu.Append(wx.ID_ABOUT,"&About","About OONIProbix")
+        menuOpen = filemenu.Append(wx.ID_OPEN,"&Open","Open an OONIProbe report")
+        filemenu.AppendSeparator()
+        menuExit = filemenu.Append(wx.ID_EXIT,"&Exit","Exit OONIProbix")	
+
+        #Setup for "Options in menu bar
+        optionsmenu = wx.Menu()
+        menuFilterEntriesOnField = optionsmenu.Append(wx.ID_ANY,"&Filter on field(s)","Filter the entries on a specific field or fields")
+
+        menuBar = wx.MenuBar()
+        menuBar.Append(filemenu,"&File")
+        menuBar.Append(optionsmenu,"&Options")
+        self.SetMenuBar(menuBar)
+
+        #TO-DO: Will need for basic logging
+        self.CreateStatusBar()
+
+        self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
+        self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
+        self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
+        self.Bind(wx.EVT_MENU, self.OnFilterEntries,menuFilterEntriesOnField)
+
+        self.notebook = ProbixNotebook(self,report)
+        self.Layout()
+        self.Show(True)
+
+    def AddReport(self,r):
+        self.notebook.AddPage(r,self,"Ohioiowaidahohawaii Highway")
+
+        
+    def OnAbout(self, e):
+        dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
+        dig.ShowModal()
+        dig.Destroy()
+
+    def OnExit(self, e):
+        self.Close(True)
+		
+    def OnOpen(self,e):
+        self.dirname = ""
+        dig = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.yamloo", wx.OPEN)
+        if dig.ShowModal() == wx.ID_OK:
+            self.filename = dig.GetFilename()
+            self.dirname = dig.GetDirectory()
+            #yfile = YAMLReport(os.path.join(self.dirname,self.filename))
+            #self.LoadHeaderTree()
+            #self.LoadEntryTree()
+            self.notebook.AddPage(ProbixReportWindow(self.notebook,title="Ohioiowaidahohawaii Highway",yaml_file=os.path.join(self.dirname,self.filename)), text="Oklahomaiowaidahohawaii Highway")
+#ProbixReportWindow(parent=self, title=self.filename + " - OONIProbix " + version_number,yaml_file=os.path.join(self.dirname,self.filename)),
+#text=self.filename + " - OONIProbix " + version_number)
+        dig.Destroy()         
+
+    def OnFilterEntries(self,e):
+        #TO-DO: Subject this dialog to various and sundry fuzzing tests perhaps?
+        filterDialog = wx.TextEntryDialog(None,'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', style=wx.OK | wx.CANCEL)
+        if filterDialog.ShowModal() == wx.ID_OK:
+            filter = filterDialog.GetValue()
+            filterDialog.Destroy()
+            report = e.GetSelection().GenerateFilteredEntryList(filter)
+            reportDialog = ProbixFilterWindow(self,report)
+
+
+
+class ProbixNotebook(wx.Notebook):
+    def __init__(self,parent,report):
+        wx.Notebook.__init__(self,parent,id=wx.ID_ANY,style=wx.BK_TOP,size=(800,600))
+        #Setup for "File" in menu bar
+        text = os.path.basename(report) + " - OONIProbix " + version_number
+        self.AddPage(ProbixReportWindow(self,text,report),text)
+
+class ProbixReportWindow(wx.Panel):
     def __init__(self, parent, title,yaml_file):
-        wx.Frame.__init__(self,parent,title=title,size=(800,600))
+        wx.Panel.__init__(self,parent,id=wx.ID_ANY,size=(750,550))
         
         #TO-DO: Figure out how to handle the sizers for this and the 
         #text field
-        self.report_tree = wx.TreeCtrl(self,size=(300,600))
+        self.report_tree = wx.TreeCtrl(self,size=(295,550))
 
         self.report_root = self.report_tree.AddRoot('Report Hierarchy')
         self.header_root = self.report_tree.AppendItem(self.report_root,'Report Headers')
@@ -70,7 +146,7 @@ class ProbixReportWindow(wx.Frame):
         self.report_tree.SetItemHasChildren(self.header_root)
         self.report_tree.SetItemHasChildren(self.entry_root)
 
-        self.report_data = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY, size=(500,600))
+        self.report_data = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY, size=(450,550))
 
 #	self.fstk = FilterStack()
 
@@ -82,32 +158,6 @@ class ProbixReportWindow(wx.Frame):
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
 
-        #TO-DO: Will need for basic logging
-        self.CreateStatusBar()
-
-        #Setup for "File" in menu bar
-        filemenu = wx.Menu()
-        menuAbout = filemenu.Append(wx.ID_ABOUT,"&About","About OONIProbix")
-        menuOpen = filemenu.Append(wx.ID_OPEN,"&Open","Open an OONIProbe report")
-        filemenu.AppendSeparator()
-        menuExit = filemenu.Append(wx.ID_EXIT,"&Exit","Exit OONIProbix")
-        
-
-        #Setup for "Options in menu bar
-        optionsmenu = wx.Menu()
-        menuFilterEntriesOnField = optionsmenu.Append(wx.ID_ANY,"&Filter on field(s)","Filter the entries on a specific field or fields")
-
-        menuBar = wx.MenuBar()
-        menuBar.Append(filemenu,"&File")
-        menuBar.Append(optionsmenu,"&Options")
-        self.SetMenuBar(menuBar)
-
-        self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
-        self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
-        self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
-        self.Bind(wx.EVT_MENU, self.OnFilterEntries,menuFilterEntriesOnField)
-        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)    
-
         self.Layout()
         self.Show(True)
 
@@ -118,23 +168,7 @@ class ProbixReportWindow(wx.Frame):
         self.LoadEntryTree()
 #	end_time = time.clock()
 #	print 'Parsing took %g seconds' % (end_time - start_time)
-
-    def OnAbout(self, e):
-        dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
-        dig.ShowModal()
-        dig.Destroy()
-
-    def OnExit(self, e):
-        self.Close(True)
-
-    def OnFilterEntries(self,e):
-        #TO-DO: Subject this dialog to various and sundry fuzzing tests perhaps?
-        filterDialog = wx.TextEntryDialog(None,'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', style=wx.OK | wx.CANCEL)
-        if filterDialog.ShowModal() == wx.ID_OK:
-            filter = filterDialog.GetValue()
-            filterDialog.Destroy()
-            report = self.GenerateFilteredEntryList(filter)
-            reportDialog = ProbixFilterWindow(self,report)
+        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)	
 
     #TO-DO: Right now this only filters on fields that are one layer deep
     #Refactor this to recurse into the structure
@@ -287,9 +321,9 @@ class ProbixReportWindow(wx.Frame):
                 if type(datum) is str or type(datum) is unicode:
                 	i = self.report_tree.AppendItem(parent,unicode_clean(datum))
         	        self.report_tree.SetPyData(i,(unicode_clean(datum),False))	
-		        else:
-			        i = self.report_tree.AppendItem(parent,unicode_clean(datum))
-        	        self.report_tree.SetPyData(i,(unicode_clean(datum),False))
+                else:
+                    i = self.report_tree.AppendItem(parent,unicode_clean(datum))
+                    self.report_tree.SetPyData(i,(unicode_clean(datum),False))
 
 
     def OnKeyClick(self,event):
@@ -298,26 +332,16 @@ class ProbixReportWindow(wx.Frame):
 #        print val
         if val_type is str:
             val = unicode(val, 'utf-8', errors='replace')
-        else:
-	        val = str(val)
-        #Just in case we're dealing with an alphabet not easily represented in ASCII
             self.report_data.ChangeValue(val)
-
-
-    def OnOpen(self,e):
-        self.dirname = ""
-        dig = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.yamloo", wx.OPEN)
-        if dig.ShowModal() == wx.ID_OK:
-            self.filename = dig.GetFilename()
-            self.dirname = dig.GetDirectory()
-            self.yfile = YAMLReport(os.path.join(self.dirname,self.filename))
-            self.LoadHeaderTree()
-            self.LoadEntryTree()
-        dig.Destroy()        
+        else:
+            val = str(val)
+            #Just in case we're dealing with an alphabet not easily represented in ASCII
+            self.report_data.ChangeValue(val)
+       
 
 class ProbixFilterWindow(wx.Frame):
     def __init__(self,parent,text):
-        wx.Frame.__init__(self,parent,title='OONIProbix - Filtered Report Data',size=(400,600))
+        wx.Frame.__init__(self,parent,title='OONIProbix - Filter Report Data',size=(400,600))
         self.filter_text = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY, size=(400,500))
         self.filter_report = text
         #It's called ops_panel because it's where we put the button for various operations we want

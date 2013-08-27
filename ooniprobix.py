@@ -32,6 +32,8 @@ class ProbixMainWindow(wx.Frame):
 
         self.statusBar = self.CreateStatusBar()
 
+        self.report_window = None
+
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)    
         self.Layout()
         self.Show(True)
@@ -88,7 +90,12 @@ class ProbixMainWindow(wx.Frame):
         fd = wx.FileDialog(self, "Select report to open", "", "", "YAML files (*.yamloo)|*.yamloo", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_OK:
             self.statusBar.SetStatusText('Loading...')
-            ProbixReportWindow(None,os.path.basename(fd.GetPath()) + " - OONIProbix " + version_number,fd.GetPath())
+            if self.report_window:
+#               self.report_window.AddPage(ProbixReportWindow(self,os.path.basename(fd.GetPath()) + " - OONIProbix " + version_number,fd.GetPath()), os.path.basename(fd.GetPath()) + " - OONIProbix " + version_number)
+                self.report_window.AddReport(fd.GetPath())
+            else:
+                self.report_window=ProbixMainFrame(self,fd.GetPath())
+#            ProbixMainFrame(None,os.path.basename(fd.GetPath()) + " - OONIProbix " + version_number,fd.GetPath())
             self.statusBar.SetStatusText('')		
 	    fd.Destroy()
 	
