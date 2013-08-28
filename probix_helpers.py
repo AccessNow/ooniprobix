@@ -89,9 +89,9 @@ class ProbixMainFrame(wx.Frame):
         self.Show(True)
 
     def AddReport(self,r):
-        self.notebook.AddPage(r,self,"Ohioiowaidahohawaii Highway")
+    	filename = os.path.basename(r)
+        self.notebook.AddPage(ProbixReportWindow(self.notebook,title=filename,yaml_file=r),text=filename)
 
-        
     def OnAbout(self, e):
         dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
         dig.ShowModal()
@@ -109,7 +109,7 @@ class ProbixMainFrame(wx.Frame):
             #yfile = YAMLReport(os.path.join(self.dirname,self.filename))
             #self.LoadHeaderTree()
             #self.LoadEntryTree()
-            self.notebook.AddPage(ProbixReportWindow(self.notebook,title="Ohioiowaidahohawaii Highway",yaml_file=os.path.join(self.dirname,self.filename)), text="Oklahomaiowaidahohawaii Highway")
+            self.notebook.AddPage(ProbixReportWindow(self.notebook,title=self.filename,yaml_file=os.path.join(self.dirname,self.filename)), text=self.filename)
 #ProbixReportWindow(parent=self, title=self.filename + " - OONIProbix " + version_number,yaml_file=os.path.join(self.dirname,self.filename)),
 #text=self.filename + " - OONIProbix " + version_number)
         dig.Destroy()         

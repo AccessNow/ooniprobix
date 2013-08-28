@@ -117,7 +117,16 @@ class ProbixMainWindow(wx.Frame):
     def OnKeyClick(self,e):
         val = os.path.join(self.working_directory,self.report_tree.GetPyData(e.GetItem()))
         self.statusBar.SetStatusText('Loading...')
-        ProbixReportWindow(None,"OONIProbix " + version_number,val)
+#        ProbixReportWindow(None,"OONIProbix " + version_number,val)
+        if self.report_window:
+#               self.report_window.AddPage(ProbixReportWindow(self,os.path.basename(fd.GetPath()) + " - OONIProbix " + version_number,fd.GetPath()), os.path.basename(fd.GetPath()) + " - OONIProbix " + version_number)
+            self.report_window.AddReport(val)
+            self.statusBar.SetStatusText('')
+        else:
+            self.report_window=ProbixMainFrame(self,val)
+#            ProbixMainFrame(None,os.path.basename(fd.GetPath()) + " - OONIProbix " + version_number,fd.GetPath())
+            self.statusBar.SetStatusText('')        
+
         self.statusBar.SetStatusText('')		
 
 app = wx.App(False)
