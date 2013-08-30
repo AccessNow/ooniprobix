@@ -9,6 +9,12 @@ import sys
 import wx
 import time
 
+try:
+    from yaml import CSafeLoader as Loader
+except ImportError:
+    print 'ImportError'
+    from yaml import SafeLoader
+
 #print "Opening %s" % sys.argv[1]
 #f = open(sys.argv[1])
 #yamloo = yaml.safe_load_all(f)
@@ -146,14 +152,27 @@ def walk_list(lst,tabs):
 
 class YAMLReport():
         def __init__(self, filename):
+                print 'Opening file for reading'
+                i = 0
                 f = open(filename,'r')
-                start_time = time.time()
-                yamloo = yaml.safe_load_all(f)
-                end_time = time.time()
+                #start_time = time.time()
+                print 'Calling yaml.safe_load_all'
+#                yamloo = CSafeLoader(f).raw_parse()
+#                cards = list(yaml.safe_load_all(f))
+                yamloo = yaml.load_all(f, Loader=Loader)
+#                print cards
+                print 'Call complete'
+                #end_time = time.time()
 		#print 'Call to yaml.safe_load_all() took %g seconds' % (end_time - start_time)
                 self.report_name = filename
+                print 'Loading report header'
+                print type(yamloo)
                 self.report_header = yamloo.next()
                 self.report_entries = []
+                
                 for entry in yamloo:
-                        self.report_entries.append(entry)
+                    print 'Loading entry ' + str(i)
+                    self.report_entries.append(entry)
+                    i=i+1
+                print "Entries loaded.  It's all my parser code from here."
                 f.close()
