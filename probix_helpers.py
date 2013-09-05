@@ -36,12 +36,25 @@ test_catalog = [ 'blocking/dnsconsistency',
 	]
 
 def unicode_clean(string):
-	if type(string) is str:
-		return unicode(string,'utf-8',errors='replace').encode('unicode-escape')
-	if type(string) is unicode:
-		return string.encode('unicode-escape')
-	else:
-		return string
+    if type(string) is str:
+#         string = string.encode('string-escape')
+         #This is a temporary hack for now until I can come up with something better
+         if 'charset=gb2312' in string:
+             string = unicode(string,'gb2312',errors='replace')
+         else:
+             string = string.decode('utf-8', errors='replace')
+#         return string.encode('string-escape')
+#         string = unicode(string,'utf-8',errors='replace')
+         return string
+    if type(string) is unicode:
+#        try:
+#            string.decode('utf-8')
+#            return string.decode('utf-8')
+#        except UnicodeEncodeError:
+#            return string.encode('utf-8',errors='replace')
+         return string
+    else:
+        return str(string)
 
 
 #class FilterStack():
@@ -147,8 +160,8 @@ class ProbixReportWindow(wx.Panel):
         self.report_tree.SetItemHasChildren(self.header_root)
         self.report_tree.SetItemHasChildren(self.entry_root)
 
-        self.report_data = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY, size=(450,550))
-
+        self.report_data = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_CHARWRAP, size=(450,550))
+#        self.report_data.SetMaxLength(0)
 #	self.fstk = FilterStack()
 
         #Let's size this up *badumtish*
@@ -170,6 +183,10 @@ class ProbixReportWindow(wx.Panel):
 #	end_time = time.clock()
 #	print 'Parsing took %g seconds' % (end_time - start_time)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)	
+        self.Bind(wx.EVT_TEXT_MAXLEN,self.MaxLen, self.report_data)
+
+    def MaxLen(self):
+        print 'Error!  Text exceeds max TextCtrl size!'
 
     #TO-DO: Right now this only filters on fields that are one layer deep
     #Refactor this to recurse into the structure
@@ -284,7 +301,7 @@ class ProbixReportWindow(wx.Panel):
                 self.LoadRecursiveDict(item,child_dict[k])
 #		self.fstk.key_pop()
             else:
-                i = self.report_tree.AppendItem(parent,unicode_clean(k))
+                i = self.report_tree.AppendItem(parent,unicode_clean(k).encode('unicode-escape'))
                 if type(child_dict[k]) is str or type(child_dict[k]) is unicode:
                     self.report_tree.SetPyData(i,(unicode_clean(child_dict[k]),False))
 #	                self.fstk.key_push(k)
@@ -320,25 +337,29 @@ class ProbixReportWindow(wx.Panel):
                 self.LoadRecursiveDict(item,datum)
             else:
                 if type(datum) is str or type(datum) is unicode:
-                	i = self.report_tree.AppendItem(parent,unicode_clean(datum))
-        	        self.report_tree.SetPyData(i,(unicode_clean(datum),False))	
+                    i = self.report_tree.AppendItem(parent,unicode_clean(datum).encode('unicode-escape'))
+                    self.report_tree.SetPyData(i,(unicode_clean(datum),False))	
                 else:
-                    i = self.report_tree.AppendItem(parent,unicode_clean(datum))
+                    i = self.report_tree.AppendItem(parent,unicode_clean(datum).encode('unicode-escape'))
                     self.report_tree.SetPyData(i,(unicode_clean(datum),False))
 
 
     def OnKeyClick(self,event):
         val = self.report_tree.GetPyData(event.GetItem())[0]
-        val_type = type(self.report_tree.GetPyData(event.GetItem())[0])
-#        print val
-        if val_type is str:
-            val = unicode(val, 'utf-8', errors='replace')
-            self.report_data.ChangeValue(val)
-        else:
-            val = str(val)
+#        val_type = type(self.report_tree.GetPyData(event.GetItem())[0])
+        print type(val)
+#        try:
+#            if val_type is str:
+#        val = unicode(val, 'utf-8', errors='replace')
+        self.report_data.ChangeValue(val)
+#            else:
+#                val = unicode(val, 'utf-8', errors='replace')
             #Just in case we're dealing with an alphabet not easily represented in ASCII
-            self.report_data.ChangeValue(val)
-       
+#                self.report_data.ChangeValue(val)
+#        except Exception as e:
+#            print str(e)
+#        print val
+        print len(val)
 
 class ProbixFilterWindow(wx.Frame):
     def __init__(self,parent,text):

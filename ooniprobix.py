@@ -51,11 +51,11 @@ class ProbixMainWindow(wx.Frame):
         dd = wx.DirDialog(None, "Select directory to open", "~/", 0, (10, 10), wx.Size(400, 300))
         if dd.ShowModal() == wx.ID_OK:
             self.working_directory = dd.GetPath()            
+            self.menuBar.Append(self.optionsMenu,"&Options")
+            self.filterOption = wx.Menu()
+            self.optionsMenu.AppendMenu(wx.ID_ANY,"Filter by Test Name",self.filterOption)
+            self.GenerateReportTree(self.working_directory,'')
         dd.Destroy()
-        self.menuBar.Append(self.optionsMenu,"&Options")
-        self.filterOption = wx.Menu()
-        self.optionsMenu.AppendMenu(wx.ID_ANY,"Filter by Test Name",self.filterOption)
-        self.GenerateReportTree(self.working_directory,'')
         
     def GenerateReportTree(self,directory,filterTest):
         #Reset the directory if it already exists

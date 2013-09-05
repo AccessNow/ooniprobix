@@ -156,23 +156,23 @@ class YAMLReport():
                 i = 0
                 f = open(filename,'r')
                 #start_time = time.time()
-                print 'Calling yaml.safe_load_all'
+#                print 'Calling yaml.safe_load_all'
 #                yamloo = CSafeLoader(f).raw_parse()
 #                cards = list(yaml.safe_load_all(f))
                 yamloo = yaml.load_all(f, Loader=Loader)
 #                print cards
-                print 'Call complete'
+#                print 'Call complete'
                 #end_time = time.time()
 		#print 'Call to yaml.safe_load_all() took %g seconds' % (end_time - start_time)
                 self.report_name = filename
-                print 'Loading report header'
+#                print 'Loading report header'
                 print type(yamloo)
                 self.report_header = yamloo.next()
                 self.report_entries = []
                 
                 for entry in yamloo:
-                    print 'Loading entry ' + str(i)
+#                    print 'Loading entry ' + str(i)
                     self.report_entries.append(entry)
                     i=i+1
-                print "Entries loaded.  It's all my parser code from here."
+#                print "Entries loaded.  It's all my parser code from here."
                 f.close()
