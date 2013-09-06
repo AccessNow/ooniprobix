@@ -15,6 +15,39 @@ except ImportError:
     print 'ImportError'
     from yaml import SafeLoader
 
+#Written to close issue #12, this makes lists into a hashable type
+#Taken from https://github.com/scooby/yaml_examples/blob/master/handle_mappings.py
+def construct_mapping_kludge(loader, node):
+    """ This constructor painfully steps through the node and checks
+that each key is hashable. Actually, what it does is checks
+whether it knows how to *make* it hashable, and if so, does that.
+If not it just lets it through and hopes for the best. But the
+common problem cases are handled here. If you're constructing
+objects directly from YAML, just make them immutable and hashable! """
+    def anything(node):
+        if isinstance(node, yaml.ScalarNode):
+            return loader.construct_scalar(node)
+        elif isinstance(node, yaml.SequenceNode):
+            return loader.construct_sequence(node)
+        elif isinstance(node, yaml.MappingNode):
+            return construct_mapping_kludge(loader, node)
+    def make_hashable(value):
+        """ Reconstructs a non-hashable value. """
+        if isinstance(value, list):
+            return tuple(map(make_hashable, value))
+        elif isinstance(value, set):
+            return frozenset(value)
+        elif isinstance(value, dict):
+            return frozenset((make_hashable(key), make_hashable(val))
+                             for key, val in value.items())
+        else:
+            return value
+    def new_items():
+        for k, v in node.value:
+            yield (make_hashable(anything(k)), anything(v))
+    return dict(new_items())
+yaml.add_constructor(u'tag:yaml.org,2002:map', construct_mapping_kludge, Loader=Loader)
+
 #print "Opening %s" % sys.argv[1]
 #f = open(sys.argv[1])
 #yamloo = yaml.safe_load_all(f)
@@ -149,10 +182,20 @@ def walk_list(lst,tabs):
 #                                        self.SetItemHasChildren(child, len(parent[key]) > 0)
 #                                else:
 #                                        self.SetItemHasChildren(child, False)
-
+#constructor_loaded = False
 class YAMLReport():
+
         def __init__(self, filename):
-                print 'Opening file for reading'
+#                print 'Opening file for reading'
+
+
+#                global constructor_loaded
+#                if constructor_loaded == False:
+#                    def construct_tuple(loader, node):
+#                        return tuple(yaml.SafeLoader.construct_sequence(loader, node))
+#                    yaml.SafeLoader.add_constructor(u'tag:yaml.org,2002:seq', construct_tuple)
+#                    constructor_loaded = True
+
                 i = 0
                 f = open(filename,'r')
                 #start_time = time.time()
@@ -166,7 +209,7 @@ class YAMLReport():
 		#print 'Call to yaml.safe_load_all() took %g seconds' % (end_time - start_time)
                 self.report_name = filename
 #                print 'Loading report header'
-                print type(yamloo)
+#                print type(yamloo)
                 self.report_header = yamloo.next()
                 self.report_entries = []
                 
