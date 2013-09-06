@@ -1,3 +1,14 @@
+# *****************************************************************************
+# *                                                                           *
+# * ooniprobix.py                                                             *
+# * The main script with the initial directory view                           *
+# *                                                                           *
+# * CONTAINS:                                                                 *
+# * -  class ProbixMainWindow:  The window loaded on startup.  Also displays  *
+# *    a directory of reports.                                                *
+# *                                                                           *
+# *****************************************************************************
+
 from yamlreports import YAMLReport
 from probix_helpers import *
 
@@ -12,13 +23,12 @@ class ProbixMainWindow(wx.Frame):
         self.fileMenu = wx.Menu()
         self.optionsMenu = wx.Menu()
 
+        #Set up the menu bar
         self.menuAbout = self.fileMenu.Append(wx.ID_ABOUT,"&About","About OONIProbix")
         self.menuOpen = self.fileMenu.Append(wx.ID_ANY,"&Open Directory","Select a directory of OONIProbe reports")
         self.menuOpenFile = self.fileMenu.Append(wx.ID_ANY,"&Open File", "Open a specific OONIProbe report")
-
         self.fileMenu.AppendSeparator()
         self.menuExit = self.fileMenu.Append(wx.ID_EXIT,"&Exit","Exit OONIProbix")
-
       
         self.filter_sentinel = False
         self.menuBar = wx.MenuBar()
@@ -56,7 +66,9 @@ class ProbixMainWindow(wx.Frame):
             self.optionsMenu.AppendMenu(wx.ID_ANY,"Filter by Test Name",self.filterOption)
             self.GenerateReportTree(self.working_directory,'')
         dd.Destroy()
-        
+    
+    #Given a directory, list the reports and figure out which ones are present so that 
+    #the user can filter on a specific test name.    
     def GenerateReportTree(self,directory,filterTest):
         #Reset the directory if it already exists
         if self.report_tree.ItemHasChildren(self.report_tree.GetRootItem()):
@@ -86,6 +98,8 @@ class ProbixMainWindow(wx.Frame):
                     self.filter_sentinel = True
         self.report_tree.ExpandAll()
 
+    #Lets the user select a specific .yamloo file and passes it to 
+    #ProbixMainFrame for opening/parsing/analysis.
     def OnOpenReport(self,e):
         fd = wx.FileDialog(self, "Select report to open", "", "", "YAML files (*.yamloo)|*.yamloo", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_OK:
