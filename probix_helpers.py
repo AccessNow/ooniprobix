@@ -3,6 +3,12 @@
 # * probix_helpers.py                                                         *
 # *                                                                           *
 # *                                                                           *
+# * CONTAINS:                                                                 *
+# * - ProbixMainFrame:                                                        *
+# * - ProbixNotebook                                                          *
+# * - ProbixReportWindow:                                                     *
+# * - ProbixFilterWindow: A dialog window to enter filter strings for reports.*
+# *   Also displays filtered data.                                            *
 # *                                                                           *
 # *                                                                           *
 # *****************************************************************************
@@ -81,14 +87,16 @@ def unicode_clean(string):
 class ProbixMainFrame(wx.Frame):
     def __init__(self,parent,report):
         wx.Frame.__init__(self,parent,title="OONIProbix",size=(900,700))
-        print 'Constructing window'
+        #print 'Constructing window'
+
+        #Setup for "File" in menu bar
         filemenu = wx.Menu()
         menuAbout = filemenu.Append(wx.ID_ABOUT,"&About","About OONIProbix")
         menuOpen = filemenu.Append(wx.ID_OPEN,"&Open","Open an OONIProbe report")
         filemenu.AppendSeparator()
         menuExit = filemenu.Append(wx.ID_EXIT,"&Exit","Exit OONIProbix")	
 
-        #Setup for "Options in menu bar
+        #Setup for "Options" in menu bar
         optionsmenu = wx.Menu()
         menuFilterEntriesOnField = optionsmenu.Append(wx.ID_ANY,"&Filter on field(s)","Filter the entries on a specific field or fields")
 
@@ -104,7 +112,7 @@ class ProbixMainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
         self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
         self.Bind(wx.EVT_MENU, self.OnFilterEntries,menuFilterEntriesOnField)
-        print 'constructing notebook'
+        #print 'constructing notebook'
         self.notebook = ProbixNotebook(self,report)
         self.Layout()
         self.Show(True)
@@ -149,7 +157,6 @@ class ProbixMainFrame(wx.Frame):
 class ProbixNotebook(wx.Notebook):
     def __init__(self,parent,report):
         wx.Notebook.__init__(self,parent,id=wx.ID_ANY,style=wx.BK_TOP,size=(800,600))
-        #Setup for "File" in menu bar
         text = os.path.basename(report) + " - OONIProbix " + version_number
         print 'Building report window'        
         self.AddPage(ProbixReportWindow(self,text,report),text)
@@ -182,7 +189,7 @@ class ProbixReportWindow(wx.Panel):
 
         self.Layout()
         self.Show(True)
-        print 'Loading report'
+        #print 'Loading report'
         self.yfile = YAMLReport(yaml_file)
         self.filename = yaml_file
 #        start_time = time.clock()
@@ -355,7 +362,7 @@ class ProbixReportWindow(wx.Panel):
     def OnKeyClick(self,event):
         val = self.report_tree.GetPyData(event.GetItem())[0]
 #        val_type = type(self.report_tree.GetPyData(event.GetItem())[0])
-        print type(val)
+#        print type(val)
 #        try:
 #            if val_type is str:
 #        val = unicode(val, 'utf-8', errors='replace')
@@ -367,7 +374,7 @@ class ProbixReportWindow(wx.Panel):
 #        except Exception as e:
 #            print str(e)
 #        print val
-        print len(val)
+#        print len(val)
 
 class ProbixFilterWindow(wx.Frame):
     def __init__(self,parent,text):

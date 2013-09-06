@@ -78,8 +78,12 @@ class ProbixMainWindow(wx.Frame):
         for file in os.listdir(directory):
             if file.endswith(".yamloo"):
                 flist.append(file)
+        #If we are trying to display only certain types of tests
         if len(filterTest) > 0:
+            #Filter the tests in the directory by name
             flist = filter(lambda s: s.find(filterTest.split('/')[1]) > -1,flist)
+            #If such tests exist in the directory, reconstruct the report list
+            #with only those tests.
             if len(flist) > 0:
                 self.report_root = self.report_tree.AddRoot('OONIProbe Report List')
                 for report in flist:
