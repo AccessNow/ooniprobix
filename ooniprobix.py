@@ -50,7 +50,7 @@ class ProbixMainWindow(wx.Frame):
 
     
     def OnAbout(self, e):
-        dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
+        dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
         dig.ShowModal()
         dig.Destroy()
 
