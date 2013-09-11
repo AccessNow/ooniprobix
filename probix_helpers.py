@@ -15,6 +15,8 @@
 import wx
 import yaml
 import os
+import base64
+import binascii
 #import time
 
 from yamlreports import YAMLReport
