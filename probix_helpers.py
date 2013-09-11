@@ -148,8 +148,11 @@ class ProbixMainFrame(wx.Frame):
         filterDialog = wx.TextEntryDialog(None,'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', style=wx.OK | wx.CANCEL)
         if filterDialog.ShowModal() == wx.ID_OK:
             filter = filterDialog.GetValue()
+            print 'Value of filter: ' + filter
             filterDialog.Destroy()
-            report = e.GetSelection().GenerateFilteredEntryList(filter)
+            print 'Type of e: ' + str(e)
+            print 'Type of e.GetSelection(): ' + str(e.GetSelection())
+            report = self.notebook.GetPage(self.notebook.GetSelection()).GenerateFilteredEntryList(filter)
             reportDialog = ProbixFilterWindow(self,report)
 
 
@@ -224,6 +227,7 @@ class ProbixReportWindow(wx.Panel):
                 row_text = ''
                 data = entry
                 for field in filter_text:
+                    print 'Value of field: ' + field
                     if '.' in field:
                         #print 'With field ' + field
                         flist = field.split('.')
@@ -233,7 +237,7 @@ class ProbixReportWindow(wx.Panel):
                                 #print 'rfield: ' + rfield
                                 if rfield.isdigit():
                                     rfield=int(rfield)
-                                    data = data[rfield]		
+                                data = data[rfield]		
                             except KeyError:
                                 if field == filter_text[-1]:
                                     data = 'N/A'
@@ -242,13 +246,13 @@ class ProbixReportWindow(wx.Panel):
                                     data = 'N/A'
                                     data += ','
                                     break
-                            row_text += str(data)
+                        row_text += unicode(data)
                     else:
                         try:
                             if field == filter_text[-1]:
-                                row_text += str(entry[field])
+                                row_text += unicode(entry[field])
                             else:
-                                row_text += str(entry[field])
+                                row_text += unicode(entry[field])
                                 row_text += ','
                         except KeyError:
                             if field == filter_text[-1]:
@@ -256,7 +260,9 @@ class ProbixReportWindow(wx.Panel):
                             else:
                                 row_text += 'N/A'
                                 row_text += ','
-	            row_text += '\n'
+                    print 'Done with field ' + field
+	            print 'printing newline'
+	        row_text += '\n'
                 filtered_list_text += row_text
         return filtered_list_text
 
