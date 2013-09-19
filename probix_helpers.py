@@ -21,8 +21,8 @@
 import wx
 import yaml
 import os
-import base64
-import binascii
+#import base64
+#import binascii
 #import time
 
 from yamlreports import YAMLReport
@@ -66,7 +66,7 @@ def unicode_clean(string):
 #         string = string.encode('string-escape')
          #This is a temporary hack for now until I can come up with something better
          if 'charset=gb2312' in string:
-             string = unicode(string,'gb2312',errors='replace')
+             string = unicode(string,'gb2312', errors='replace')
          else:
              string = string.decode('utf-8', errors='replace')
 #         return string.encode('string-escape')
@@ -98,25 +98,27 @@ def unicode_clean(string):
 #		print self.stk
 
 class ProbixMainFrame(wx.Frame):
-    def __init__(self,parent,report):
-        wx.Frame.__init__(self,parent,title="OONIProbix",size=(900,700))
+    def __init__(self, parent, report):
+        wx.Frame.__init__(self, parent, title="OONIProbix", size=(900, 700))
         #print 'Constructing window'
 
         #Setup for "File" in menu bar
         filemenu = wx.Menu()
-        menuAbout = filemenu.Append(wx.ID_ABOUT,"&About","About OONIProbix")
-        menuOpen = filemenu.Append(wx.ID_OPEN,"&Open","Open an OONIProbe report")
+        menuAbout = filemenu.Append(wx.ID_ABOUT, "&About", "About OONIProbix")
+        menuOpen = filemenu.Append(wx.ID_OPEN, "&Open", "Open an OONIProbe report")
         filemenu.AppendSeparator()
-        menuExit = filemenu.Append(wx.ID_EXIT,"&Exit","Exit OONIProbix")	
+        menuExit = filemenu.Append(wx.ID_EXIT, "&Exit", "Exit OONIProbix")	
 
         #Setup for "Options" in menu bar
         optionsmenu = wx.Menu()
-        menuFilterEntriesOnField = optionsmenu.Append(wx.ID_ANY,"&Filter on field(s)","Filter the entries on a specific field or fields")
+        menuFilterEntriesOnField = optionsmenu.Append(wx.ID_ANY, 
+            "&Filter on field(s)", 
+            "Filter the entries on a specific field or fields")
 
         #Setup for the menu bar itself
         menuBar = wx.MenuBar()
-        menuBar.Append(filemenu,"&File")
-        menuBar.Append(optionsmenu,"&Options")
+        menuBar.Append(filemenu, "&File")
+        menuBar.Append(optionsmenu, "&Options")
         self.SetMenuBar(menuBar)
 
         #TO-DO: Will need for basic logging
@@ -126,20 +128,24 @@ class ProbixMainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
         self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
         self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
-        self.Bind(wx.EVT_MENU, self.OnFilterEntries,menuFilterEntriesOnField)
+        self.Bind(wx.EVT_MENU, self.OnFilterEntries, menuFilterEntriesOnField)
         #print 'constructing notebook'
-        self.notebook = ProbixNotebook(self,report)
+        self.notebook = ProbixNotebook(self, report)
         self.Layout()
         self.Show(True)
 
     #Adds another tab to the Notebook and loads the given report
     def AddReport(self,r):
     	filename = os.path.basename(r) #TO-DO: If somebody opens a file outside of the current working directory, this should break.
-        self.notebook.AddPage(ProbixReportWindow(self.notebook,title=filename,yaml_file=r),text=filename)
+        self.notebook.AddPage(ProbixReportWindow(self.notebook, title=filename, 
+            yaml_file=r), text=filename)
 
     #The same basic About dialog from ooniprobix.py
     def OnAbout(self, e):
-        dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
+        dig = wx.MessageDialog(self, "OONIProbix version " + version_number 
+            + " by " + authors + "\n\n" + "An OONIProbe report GUI, because "
+            + "nobody has time to read through a 50MB YAML file",
+            "About OONIProbix", wx.OK)
         dig.ShowModal()
         dig.Destroy()
 
@@ -157,7 +163,8 @@ class ProbixMainFrame(wx.Frame):
             #yfile = YAMLReport(os.path.join(self.dirname,self.filename))
             #self.LoadHeaderTree()
             #self.LoadEntryTree()
-            self.notebook.AddPage(ProbixReportWindow(self.notebook,title=self.filename,yaml_file=os.path.join(self.dirname,self.filename)), text=self.filename)
+            self.notebook.AddPage(ProbixReportWindow(self.notebook, title=self.filename, 
+            yaml_file=os.path.join(self.dirname, self.filename)), text=self.filename)
 #ProbixReportWindow(parent=self, title=self.filename + " - OONIProbix " + version_number,yaml_file=os.path.join(self.dirname,self.filename)),
 #text=self.filename + " - OONIProbix " + version_number)
         dig.Destroy()         
@@ -165,7 +172,7 @@ class ProbixMainFrame(wx.Frame):
     #Brings up the entry filter dialog
     def OnFilterEntries(self,e):
         #TO-DO: Subject this dialog to various and sundry fuzzing tests perhaps?
-        filterDialog = wx.TextEntryDialog(None,'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', style=wx.OK | wx.CANCEL)
+        filterDialog = wx.TextEntryDialog(None, 'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', style=wx.OK | wx.CANCEL)
         if filterDialog.ShowModal() == wx.ID_OK:
             filter = filterDialog.GetValue()
             #print 'Value of filter: ' + filter
@@ -179,24 +186,25 @@ class ProbixMainFrame(wx.Frame):
 #Out multi-tab class injerited from wx.Notebook
 class ProbixNotebook(wx.Notebook):
     def __init__(self,parent,report):
-        wx.Notebook.__init__(self,parent,id=wx.ID_ANY,style=wx.BK_TOP,size=(800,600))
+        wx.Notebook.__init__(self,parent, id=wx.ID_ANY, style=wx.BK_TOP,
+            size=(800,600))
         text = os.path.basename(report) + " - OONIProbix " + version_number
         print 'Building report window'        
-        self.AddPage(ProbixReportWindow(self,text,report),text)
+        self.AddPage(ProbixReportWindow(self, text, report), text)
 
 #The part of the program that constructs the nested hierarchy with the data field display.
 #Also contains the functionality for filtering on entry fields (e.g. body_proportion/input)
 class ProbixReportWindow(wx.Panel):
-    def __init__(self, parent, title,yaml_file):
-        wx.Panel.__init__(self,parent,id=wx.ID_ANY,size=(750,550))
+    def __init__(self, parent, title, yaml_file):
+        wx.Panel.__init__(self, parent, id=wx.ID_ANY, size=(750, 550))
         
         #TO-DO: Figure out how to handle the sizers for this and the 
         #text field
-        self.report_tree = wx.TreeCtrl(self,size=(295,550))
+        self.report_tree = wx.TreeCtrl(self, size=(295, 550))
 
         self.report_root = self.report_tree.AddRoot('Report Hierarchy')
-        self.header_root = self.report_tree.AppendItem(self.report_root,'Report Headers')
-        self.entry_root = self.report_tree.AppendItem(self.report_root,'Report Entries')
+        self.header_root = self.report_tree.AppendItem(self.report_root, 'Report Headers')
+        self.entry_root = self.report_tree.AppendItem(self.report_root, 'Report Entries')
         self.report_tree.SetItemHasChildren(self.header_root)
         self.report_tree.SetItemHasChildren(self.entry_root)
 
@@ -206,8 +214,8 @@ class ProbixReportWindow(wx.Panel):
 
         #Let's size this up *badumtish*
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.Add(self.report_tree,1,wx.EXPAND | wx.ALIGN_LEFT)
-        self.sizer.Add(self.report_data,2.75,wx.EXPAND | wx.ALIGN_RIGHT)
+        self.sizer.Add(self.report_tree, 1, wx.EXPAND | wx.ALIGN_LEFT)
+        self.sizer.Add(self.report_data, 2.75, wx.EXPAND | wx.ALIGN_RIGHT)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
@@ -223,7 +231,7 @@ class ProbixReportWindow(wx.Panel):
 #	end_time = time.clock()
 #	print 'Parsing took %g seconds' % (end_time - start_time)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)	
-        self.Bind(wx.EVT_TEXT_MAXLEN,self.MaxLen, self.report_data)
+        self.Bind(wx.EVT_TEXT_MAXLEN, self.MaxLen, self.report_data)
 
     def MaxLen(self):
         print 'Error!  Text exceeds max TextCtrl size!'
@@ -295,15 +303,16 @@ class ProbixReportWindow(wx.Panel):
             item = self.report_tree.AppendItem(self.header_root, unicode_clean(header_key))
             if (type(data) is dict) and len(data) >= 1:
                 self.report_tree.SetItemHasChildren(item)
-                self.report_tree.SetPyData(item,('nested data',False))
+                self.report_tree.SetPyData(item, ('nested data', False))
 #                self.fstk.key_push(header_key)
 #		self.fstk.dump_stack()
-		self.LoadRecursiveDict(item,data)
+		self.LoadRecursiveDict(item, data)
 #		self.fstk.key_pop()
             else:
 #                self.fstk.key_push(header_key)
 #		self.fstk.dump_stack()
-                self.report_tree.SetPyData(item,(unicode_clean(self.yfile.report_header[header_key]),False))
+                self.report_tree.SetPyData(item, 
+                (unicode_clean(self.yfile.report_header[header_key]), False))
 #		self.fstk.key_pop()
 
     
@@ -311,16 +320,18 @@ class ProbixReportWindow(wx.Panel):
         for entry in self.yfile.report_entries:
             if entry:
                 if entry['input']:
-                    item = self.report_tree.AppendItem(self.entry_root,unicode_clean(entry['input']))
+                    item = self.report_tree.AppendItem(self.entry_root, 
+                           unicode_clean(entry['input']))
 #	            self.fstk.key_push(entry['input'])
                 else:
-                    item = self.report_tree.AppendItem(self.entry_root,'Test Case')                
+                    item = self.report_tree.AppendItem(self.entry_root,
+                        'Test Case')
 #	            self.fstk.key_push('Test Case')
-                self.report_tree.SetPyData(item,('nested data', False))
+                self.report_tree.SetPyData(item, ('nested data', False))
                 self.report_tree.SetItemHasChildren(item)
                 #print 'Constructing tree for entry ' + entry['input']
 #		self.fstk.dump_stack()
-                self.LoadRecursiveDict(item,entry)
+                self.LoadRecursiveDict(item, entry)
 #		self.fstk.key_pop()
 
 
@@ -328,25 +339,25 @@ class ProbixReportWindow(wx.Panel):
         ckeys = child_dict.keys()
         for k in ckeys:
             if (type(child_dict[k]) is list or type(child_dict[k]) is set) and len(child_dict[k]) >= 1:
-                i = self.report_tree.AppendItem(parent,unicode_clean(k))
-                self.report_tree.SetPyData(i,('nested data', False))    
+                i = self.report_tree.AppendItem(parent, unicode_clean(k))
+                self.report_tree.SetPyData(i, ('nested data', False))    
                 self.report_tree.SetItemHasChildren(i)
 #                self.fstk.key_push(k)
 #		self.fstk.dump_stack()
-                self.LoadRecursiveCollection(i,child_dict[k])
+                self.LoadRecursiveCollection(i, child_dict[k])
 #		self.fstk.key_pop()
             elif type(child_dict[k]) is dict and len(child_dict[k]) >= 1:    
-                item = self.report_tree.AppendItem(parent,unicode_clean(k))
-                self.report_tree.SetPyData(item,('nested data', False))
+                item = self.report_tree.AppendItem(parent, unicode_clean(k))
+                self.report_tree.SetPyData(item, ('nested data', False))
                 self.report_tree.SetItemHasChildren(item)
 #                self.fstk.key_push(k)
 #		self.fstk.dump_stack()
-                self.LoadRecursiveDict(item,child_dict[k])
+                self.LoadRecursiveDict(item, child_dict[k])
 #		self.fstk.key_pop()
             else:
-                i = self.report_tree.AppendItem(parent,unicode_clean(k).encode('unicode-escape'))
+                i = self.report_tree.AppendItem(parent, unicode_clean(k).encode('unicode-escape'))
                 if type(child_dict[k]) is str or type(child_dict[k]) is unicode:
-                    self.report_tree.SetPyData(i,(unicode_clean(child_dict[k]),False))
+                    self.report_tree.SetPyData(i, (unicode_clean(child_dict[k]), False))
 #	                self.fstk.key_push(k)
 #			self.fstk.dump_stack()
 #	                self.report_tree.SetPyData(i,(child_dict[k],False))
@@ -354,7 +365,7 @@ class ProbixReportWindow(wx.Panel):
                 else:	
 #        	        self.fstk.key_push(k)
 #			self.fstk.dump_stack()
-                    self.report_tree.SetPyData(i,(unicode_clean(child_dict[k]),False))
+                    self.report_tree.SetPyData(i, (unicode_clean(child_dict[k]), False))
 #			self.fstk.key_pop()
 
     def LoadRecursiveCollection(self,parent,child_clct):
@@ -364,27 +375,29 @@ class ProbixReportWindow(wx.Panel):
 	#	if val_type is not str and val_type is not unicode:
                 val = unicode_clean(datum)
 #		    val = val.encode('unicode-escape')
-                i = self.report_tree.AppendItem(parent,str(child_clct.index(datum)))
-                self.report_tree.SetPyData(i,(val, False))    
+                i = self.report_tree.AppendItem(parent, str(child_clct.index(datum)))
+                self.report_tree.SetPyData(i, (val, False))    
                 self.report_tree.SetItemHasChildren(i)
-                self.LoadRecursiveCollection(i,datum)
+                self.LoadRecursiveCollection(i, datum)
             elif type(datum) is dict and len(datum) >= 1:    
                 #Problem: Collection --> dict without handy key
 #                print 'Datum: ' + str(datum)
 #                if val_type is not str and val_type is not unicode:
                 val = unicode_clean(datum)
 #		    val = val.encode('unicode-escape')
-                item = self.report_tree.AppendItem(parent,str(child_clct.index(datum)))
-                self.report_tree.SetPyData(item,(val, False))
+                item = self.report_tree.AppendItem(parent, str(child_clct.index(datum)))
+                self.report_tree.SetPyData(item, (val, False))
                 self.report_tree.SetItemHasChildren(item)
-                self.LoadRecursiveDict(item,datum)
+                self.LoadRecursiveDict(item, datum)
             else:
                 if type(datum) is str or type(datum) is unicode:
-                    i = self.report_tree.AppendItem(parent,unicode_clean(datum).encode('unicode-escape'))
-                    self.report_tree.SetPyData(i,(unicode_clean(datum),False))	
+                    i = self.report_tree.AppendItem(parent, 
+                        unicode_clean(datum).encode('unicode-escape'))
+                    self.report_tree.SetPyData(i, (unicode_clean(datum), False))	
                 else:
-                    i = self.report_tree.AppendItem(parent,unicode_clean(datum).encode('unicode-escape'))
-                    self.report_tree.SetPyData(i,(unicode_clean(datum),False))
+                    i = self.report_tree.AppendItem(parent, 
+                        unicode_clean(datum).encode('unicode-escape'))
+                    self.report_tree.SetPyData(i, (unicode_clean(datum), False))
 
 
     def OnKeyClick(self,event):
@@ -405,19 +418,19 @@ class ProbixReportWindow(wx.Panel):
 #        print len(val)
 
 class ProbixFilterWindow(wx.Frame):
-    def __init__(self,parent,text):
-        wx.Frame.__init__(self,parent,title='OONIProbix - Filter Report Data',size=(400,600))
+    def __init__(self, parent, text):
+        wx.Frame.__init__(self, parent, title='OONIProbix - Filter Report Data', size=(400,600))
         self.filter_text = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY, size=(400,500))
         self.filter_report = text
         #It's called ops_panel because it's where we put the button for various operations we want
         #to perform on the filtered data
-        self.ops_panel = wx.Panel(self,wx.ID_ANY)
-        self.export_to_csv = wx.Button(self.ops_panel,-1,"Export CSV",(0,0))
-        self.export_to_csv.Bind(wx.EVT_BUTTON,self.OnExportToCSV)
+        self.ops_panel = wx.Panel(self, wx.ID_ANY)
+        self.export_to_csv = wx.Button(self.ops_panel, -1, "Export CSV", (0,0))
+        self.export_to_csv.Bind(wx.EVT_BUTTON, self.OnExportToCSV)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.filter_text,10,wx.EXPAND | wx.ALIGN_TOP)
-        self.sizer.Add(self.ops_panel,1,wx.EXPAND | wx.ALIGN_BOTTOM)
+        self.sizer.Add(self.filter_text, 10, wx.EXPAND | wx.ALIGN_TOP)
+        self.sizer.Add(self.ops_panel, 1, wx.EXPAND | wx.ALIGN_BOTTOM)
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
@@ -426,9 +439,9 @@ class ProbixFilterWindow(wx.Frame):
 
 
     def OnExportToCSV(self,e):
-        dlg = wx.FileDialog(self, "Export to CSV", os.getcwd(),'','*.csv',wx.SAVE|wx.OVERWRITE_PROMPT)        
+        dlg = wx.FileDialog(self, "Export to CSV", os.getcwd(), '', '*.csv', wx.SAVE|wx.OVERWRITE_PROMPT)        
         if dlg.ShowModal() == wx.ID_OK:
             filename = dlg.GetPath()
-            f = open(filename,'w')
+            f = open(filename, 'w')
             f.write(self.filter_report)
         dlg.Destroy()        
