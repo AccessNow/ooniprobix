@@ -15,6 +15,8 @@ import sys
 import wx
 import time
 
+#Imports the Loader class that runs on libyaml in pure C, making things
+#A LOT faster.
 try:
     from yaml import CSafeLoader as Loader
 except ImportError:
@@ -89,22 +91,14 @@ yaml.add_constructor(u'tag:yaml.org,2002:map', construct_mapping_kludge, Loader=
 class YAMLReport():
 
         def __init__(self, filename):
-#                print 'Opening file for reading'
 #                i = 0
                 f = open(filename,'r')
-#                print 'Calling yaml.safe_load_all'
                 yamloo = yaml.load_all(f, Loader=Loader)
-#                print 'Call complete'
-		#print 'Call to yaml.safe_load_all() took %g seconds' % (end_time - start_time)
                 self.report_name = filename
-#                print 'Loading report header'
-#                print type(yamloo)
                 self.report_header = yamloo.next()
                 self.report_entries = []
                 
                 for entry in yamloo:
-#                    print 'Loading entry ' + str(i)
                     self.report_entries.append(entry)
 #                    i=i+1
-#                print "Entries loaded.  It's all my parser code from here."
                 f.close()

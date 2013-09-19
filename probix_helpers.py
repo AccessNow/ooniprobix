@@ -4,8 +4,14 @@
 # *                                                                           *
 # *                                                                           *
 # * CONTAINS:                                                                 *
-# * - ProbixMainFrame:                                                        *
+# * - ProbixMainFrame: Where all of the most basic setup and sizing happens.  *
+# *   Change this class if you want to change the default dimensions or       *
+# *   add to the menu bar                                                     *
 # * - ProbixNotebook                                                          *
+# *                                                                           *
+# *                                                                           *
+# *                                                                           *
+# *                                                                           *
 # * - ProbixReportWindow:                                                     *
 # * - ProbixFilterWindow: A dialog window to enter filter strings for reports.*
 # *   Also displays filtered data.                                            *
@@ -23,6 +29,7 @@ from yamlreports import YAMLReport
 
 version_number = '0.0.4'
 
+#Full catalog of tests currently supported by ooniprobe.  Used to filter out specific types of tests
 test_catalog = [ 'blocking/dnsconsistency',
 	  'blocking/http_requests',
 	  'blocking/tcpconnect',
@@ -51,6 +58,9 @@ test_catalog = [ 'blocking/dnsconsistency',
 	  'scanning/http_url_list'
 	]
 
+#Done to santiize certain types read in from the files.  Some character encodings 
+#(e.g. the GB2312 Simplified Chinese encoding) throw out all kinds of exceptions
+#without some careful handling.
 def unicode_clean(string):
     if type(string) is str:
 #         string = string.encode('string-escape')
@@ -72,7 +82,8 @@ def unicode_clean(string):
     else:
         return str(string)
 
-
+#This is something of a debug class to follow along whenever OONIProbix runs through a report to 
+#Generate the report hierarchy.
 #class FilterStack():
 #	def __init__(self):
 #		self.stk = []
@@ -102,6 +113,7 @@ class ProbixMainFrame(wx.Frame):
         optionsmenu = wx.Menu()
         menuFilterEntriesOnField = optionsmenu.Append(wx.ID_ANY,"&Filter on field(s)","Filter the entries on a specific field or fields")
 
+        #Setup for the menu bar itself
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu,"&File")
         menuBar.Append(optionsmenu,"&Options")
@@ -110,6 +122,7 @@ class ProbixMainFrame(wx.Frame):
         #TO-DO: Will need for basic logging
         self.CreateStatusBar()
 
+        #Bindings and multi-tab setup
         self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
         self.Bind(wx.EVT_MENU, self.OnExit, menuExit)
         self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
@@ -119,18 +132,22 @@ class ProbixMainFrame(wx.Frame):
         self.Layout()
         self.Show(True)
 
+    #Adds another tab to the Notebook and loads the given report
     def AddReport(self,r):
-    	filename = os.path.basename(r)
+    	filename = os.path.basename(r) #TO-DO: If somebody opens a file outside of the current working directory, this should break.
         self.notebook.AddPage(ProbixReportWindow(self.notebook,title=filename,yaml_file=r),text=filename)
 
+    #The same basic About dialog from ooniprobix.py
     def OnAbout(self, e):
         dig = wx.MessageDialog(self, "OONIProbix version " + version_number + " by " + authors + "\n\n" + "An OONIProbe report GUI, because nobody has time to read through a 50MB YAML file","About OONIProbix", wx.OK)
         dig.ShowModal()
         dig.Destroy()
 
+    #That's all folks!
     def OnExit(self, e):
         self.Close(True)
-		
+
+    #Opens and individual file		
     def OnOpen(self,e):
         self.dirname = ""
         dig = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.yamloo", wx.OPEN)
@@ -145,20 +162,21 @@ class ProbixMainFrame(wx.Frame):
 #text=self.filename + " - OONIProbix " + version_number)
         dig.Destroy()         
 
+    #Brings up the entry filter dialog
     def OnFilterEntries(self,e):
         #TO-DO: Subject this dialog to various and sundry fuzzing tests perhaps?
         filterDialog = wx.TextEntryDialog(None,'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', style=wx.OK | wx.CANCEL)
         if filterDialog.ShowModal() == wx.ID_OK:
             filter = filterDialog.GetValue()
-            print 'Value of filter: ' + filter
+            #print 'Value of filter: ' + filter
             filterDialog.Destroy()
-            print 'Type of e: ' + str(e)
-            print 'Type of e.GetSelection(): ' + str(e.GetSelection())
+            #print 'Type of e: ' + str(e)
+            #print 'Type of e.GetSelection(): ' + str(e.GetSelection())
             report = self.notebook.GetPage(self.notebook.GetSelection()).GenerateFilteredEntryList(filter)
             reportDialog = ProbixFilterWindow(self,report)
 
 
-
+#Out multi-tab class injerited from wx.Notebook
 class ProbixNotebook(wx.Notebook):
     def __init__(self,parent,report):
         wx.Notebook.__init__(self,parent,id=wx.ID_ANY,style=wx.BK_TOP,size=(800,600))
@@ -166,6 +184,8 @@ class ProbixNotebook(wx.Notebook):
         print 'Building report window'        
         self.AddPage(ProbixReportWindow(self,text,report),text)
 
+#The part of the program that constructs the nested hierarchy with the data field display.
+#Also contains the functionality for filtering on entry fields (e.g. body_proportion/input)
 class ProbixReportWindow(wx.Panel):
     def __init__(self, parent, title,yaml_file):
         wx.Panel.__init__(self,parent,id=wx.ID_ANY,size=(750,550))
