@@ -14,6 +14,8 @@ from probix_helpers import *
 
 authors = "Peter Bourgelais"
 version_number = "0.0.4"
+colorize = True
+
 
 class ProbixMainWindow(wx.Frame):
     def __init__(self, parent, title):
@@ -86,6 +88,7 @@ class ProbixMainWindow(wx.Frame):
     #Given a directory, list the reports and figure out which ones are 
     #present so that the user can filter on a specific test name.    
     def GenerateReportTree(self,filterTest):
+        global colorize
         #Reset the directory if it already exists
         if self.report_tree.ItemHasChildren(self.report_tree.GetRootItem()):
             print 'Clearing report tree'
@@ -115,17 +118,24 @@ class ProbixMainWindow(wx.Frame):
                     self.report_tree.SetPyData(report_id,report)
 
         else:
-#		self.filterOption.Enable(True)
-                #self.filterOption.DeleteAllItems()
-                print 'in else'
-                self.report_root = self.report_tree.AddRoot('OONIProbe Report List')
-                if len(flist) > 0:
-                    print 'in else-->if len(flist) > 0'
-                    for report in flist:
-                        print 'appended item ' + report
-                        report_id = self.report_tree.AppendItem(self.report_root, 
-                                                                          report)
-                        self.report_tree.SetPyData(report_id, report)		
+#           self.filterOption.Enable(True)
+            #self.filterOption.DeleteAllItems()
+            print 'in else'
+            self.report_root = self.report_tree.AddRoot('OONIProbe Report List')
+            if len(flist) > 0:
+                print 'in else-->if len(flist) > 0'
+                for report in flist:
+                    print 'appended item ' + report
+                    report_id = self.report_tree.AppendItem(self.report_root, 
+                                                                      report)
+                    
+                    self.report_tree.SetPyData(report_id, report)		
+                    if colorize:
+                        self.report_tree.SetItemBackgroundColour(report_id,wx.NamedColour('LIGHT GREY'))
+                        colorize=False
+                    else:
+                        colorize=True                    
+
         if self.filterOption.GetMenuItemCount() > 0:
             print 'generating filter by field(s) list'
             self.optionsMenu.DeleteItem(self.filterOption)
