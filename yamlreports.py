@@ -11,9 +11,9 @@
 # *                                                                           *
 # *****************************************************************************
 import yaml
-import sys
-import wx
-import time
+#import sys
+#import wx
+#import time
 
 #Imports the Loader class that runs on libyaml in pure C, making things
 #A LOT faster.
@@ -24,7 +24,8 @@ except ImportError:
     from yaml import SafeLoader
 
 #Written to close issue #12, this makes lists into a hashable type
-#Taken from https://github.com/scooby/yaml_examples/blob/master/handle_mappings.py
+#Taken from 
+#https://github.com/scooby/yaml_examples/blob/master/handle_mappings.py
 def construct_mapping_kludge(loader, node):
     """ This constructor painfully steps through the node and checks
 that each key is hashable. Actually, what it does is checks
@@ -102,4 +103,4 @@ class YAMLReport():
         for entry in yamloo:
             self.report_entries.append(entry)
 #           i=i+1
-            f.close()
+        f.close()

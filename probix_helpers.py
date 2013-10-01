@@ -29,7 +29,8 @@ from yamlreports import YAMLReport
 
 version_number = '0.0.4'
 
-#Full catalog of tests currently supported by ooniprobe.  Used to filter out specific types of tests
+#Full catalog of tests currently supported by ooniprobe.  
+#Used to filter out specific types of tests
 test_catalog = [ 'blocking/dnsconsistency',
 	  'blocking/http_requests',
 	  'blocking/tcpconnect',
@@ -58,13 +59,14 @@ test_catalog = [ 'blocking/dnsconsistency',
 	  'scanning/http_url_list'
 	]
 
-#Done to santiize certain types read in from the files.  Some character encodings 
-#(e.g. the GB2312 Simplified Chinese encoding) throw out all kinds of exceptions
-#without some careful handling.
+#Done to santiize certain types read in from the files.  
+#Some character encodings (e.g. the GB2312 Simplified Chinese encoding) throw 
+#out all kinds of exceptions without some careful handling.
 def unicode_clean(string):
     if type(string) is str:
 #         string = string.encode('string-escape')
-         #This is a temporary hack for now until I can come up with something better
+         #This is a temporary hack for now until I can come up with 
+         #something better
          if 'charset=gb2312' in string:
              string = unicode(string,'gb2312', errors='replace')
          else:
@@ -82,7 +84,8 @@ def unicode_clean(string):
     else:
         return str(string)
 
-#This is something of a debug class to follow along whenever OONIProbix runs through a report to 
+#This is something of a debug class to follow along whenever 
+#OONIProbix runs through a report to 
 #Generate the report hierarchy.
 #class FilterStack():
 #	def __init__(self):
@@ -105,7 +108,8 @@ class ProbixMainFrame(wx.Frame):
         #Setup for "File" in menu bar
         filemenu = wx.Menu()
         menuAbout = filemenu.Append(wx.ID_ABOUT, "&About", "About OONIProbix")
-        menuOpen = filemenu.Append(wx.ID_OPEN, "&Open", "Open an OONIProbe report")
+        menuOpen = filemenu.Append(wx.ID_OPEN, "&Open", 
+                            "Open an OONIProbe report")
         filemenu.AppendSeparator()
         menuExit = filemenu.Append(wx.ID_EXIT, "&Exit", "Exit OONIProbix")	
 
@@ -135,7 +139,7 @@ class ProbixMainFrame(wx.Frame):
         self.Show(True)
 
     #Adds another tab to the Notebook and loads the given report
-    def AddReport(self,r):
+    def AddReport(self, r):
     	filename = os.path.basename(r) #TO-DO: If somebody opens a file outside of the current working directory, this should break.
         self.notebook.AddPage(ProbixReportWindow(self.notebook, title=filename, 
             yaml_file=r), text=filename)
@@ -154,7 +158,7 @@ class ProbixMainFrame(wx.Frame):
         self.Close(True)
 
     #Opens and individual file		
-    def OnOpen(self,e):
+    def OnOpen(self, e):
         self.dirname = ""
         dig = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.yamloo", wx.OPEN)
         if dig.ShowModal() == wx.ID_OK:
@@ -163,14 +167,17 @@ class ProbixMainFrame(wx.Frame):
             #yfile = YAMLReport(os.path.join(self.dirname,self.filename))
             #self.LoadHeaderTree()
             #self.LoadEntryTree()
-            self.notebook.AddPage(ProbixReportWindow(self.notebook, title=self.filename, 
-            yaml_file=os.path.join(self.dirname, self.filename)), text=self.filename)
+            self.notebook.AddPage(ProbixReportWindow(self.notebook, 
+                                  title=self.filename, 
+                                  yaml_file=os.path.join(self.dirname, 
+                                                         self.filename)), 
+                                  text=self.filename)
 #ProbixReportWindow(parent=self, title=self.filename + " - OONIProbix " + version_number,yaml_file=os.path.join(self.dirname,self.filename)),
 #text=self.filename + " - OONIProbix " + version_number)
         dig.Destroy()         
 
     #Brings up the entry filter dialog
-    def OnFilterEntries(self,e):
+    def OnFilterEntries(self, e):
         #TO-DO: Subject this dialog to various and sundry fuzzing tests perhaps?
         filterDialog = wx.TextEntryDialog(None, 'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', style=wx.OK | wx.CANCEL)
         if filterDialog.ShowModal() == wx.ID_OK:
@@ -238,7 +245,7 @@ class ProbixReportWindow(wx.Panel):
 
     #TO-DO: Right now this only filters on fields that are one layer deep
     #Refactor this to recurse into the structure
-    def GenerateFilteredEntryList(self,filter_text):
+    def GenerateFilteredEntryList(self, filter_text):
 	#Generate some headers for the filtered report
 	#We're looking at the name of the text and the schema used
         filtered_list_text = ''
@@ -335,7 +342,7 @@ class ProbixReportWindow(wx.Panel):
 #		self.fstk.key_pop()
 
 
-    def LoadRecursiveDict(self,parent,child_dict):
+    def LoadRecursiveDict(self, parent, child_dict):
         ckeys = child_dict.keys()
         for k in ckeys:
             if (type(child_dict[k]) is list or type(child_dict[k]) is set) and len(child_dict[k]) >= 1:
@@ -368,7 +375,7 @@ class ProbixReportWindow(wx.Panel):
                     self.report_tree.SetPyData(i, (unicode_clean(child_dict[k]), False))
 #			self.fstk.key_pop()
 
-    def LoadRecursiveCollection(self,parent,child_clct):
+    def LoadRecursiveCollection(self, parent, child_clct):
         for datum in child_clct:
             val_type = type(datum)
             if (type(datum) is list or type(datum) is set) and len(datum) >= 1:
@@ -400,7 +407,7 @@ class ProbixReportWindow(wx.Panel):
                     self.report_tree.SetPyData(i, (unicode_clean(datum), False))
 
 
-    def OnKeyClick(self,event):
+    def OnKeyClick(self, event):
         val = self.report_tree.GetPyData(event.GetItem())[0]
 #        val_type = type(self.report_tree.GetPyData(event.GetItem())[0])
 #        print type(val)
@@ -438,7 +445,7 @@ class ProbixFilterWindow(wx.Frame):
         self.Show(True)
 
 
-    def OnExportToCSV(self,e):
+    def OnExportToCSV(self, e):
         dlg = wx.FileDialog(self, "Export to CSV", os.getcwd(), '', '*.csv', wx.SAVE|wx.OVERWRITE_PROMPT)        
         if dlg.ShowModal() == wx.ID_OK:
             filename = dlg.GetPath()

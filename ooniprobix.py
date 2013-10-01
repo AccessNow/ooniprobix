@@ -25,12 +25,15 @@ class ProbixMainWindow(wx.Frame):
         self.optionsMenu = wx.Menu()
 
         #Set up the menu bar
-        self.menuAbout = self.fileMenu.Append(wx.ID_ABOUT, "&About", "About OONIProbix")
+        self.menuAbout = self.fileMenu.Append(wx.ID_ABOUT, "&About", 
+            "About OONIProbix")
         self.menuOpen = self.fileMenu.Append(wx.ID_ANY, "&Open Directory", 
         "Select a directory of OONIProbe reports")
-        self.menuOpenFile = self.fileMenu.Append(wx.ID_ANY, "&Open File", "Open a specific OONIProbe report")
+        self.menuOpenFile = self.fileMenu.Append(wx.ID_ANY, "&Open File", 
+            "Open a specific OONIProbe report")
         self.fileMenu.AppendSeparator()
-        self.menuExit = self.fileMenu.Append(wx.ID_EXIT,"&Exit", "Exit OONIProbix")
+        self.menuExit = self.fileMenu.Append(wx.ID_EXIT,"&Exit", 
+            "Exit OONIProbix")
 
         #See the documentation in GenerateReportTree for an explanation
         self.filter_sentinel = False
@@ -43,7 +46,8 @@ class ProbixMainWindow(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnExit, self.menuExit)
         self.Bind(wx.EVT_MENU, self.OnOpenDirectory, self.menuOpen)
         self.Bind(wx.EVT_MENU, self.OnOpenReport, self.menuOpenFile)
-        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, self.report_tree)    
+        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnKeyClick, 
+            self.report_tree)    
 
         self.statusBar = self.CreateStatusBar()
 
@@ -66,19 +70,21 @@ class ProbixMainWindow(wx.Frame):
 
     #Opens a directory of reports for browsing.  Also adds the options menu 
     def OnOpenDirectory(self,e):
-        dd = wx.DirDialog(None, "Select directory to open", "~/", 0, (10, 10), wx.Size(400, 300))
+        dd = wx.DirDialog(None, "Select directory to open", "~/", 0, (10, 10),
+            wx.Size(400, 300))
         if dd.ShowModal() == wx.ID_OK:
             self.working_directory = dd.GetPath()            
             #Added so we don't have two Options menus
             if self.optionsMenu.GetMenuItemCount() < 1:
                 self.menuBar.Append(self.optionsMenu, "&Options")
                 self.filterOption = wx.Menu()
-                self.optionsMenu.AppendMenu(wx.ID_ANY, "Filter by Test Name", self.filterOption)
+                self.optionsMenu.AppendMenu(wx.ID_ANY, "Filter by Test Name", 
+                    self.filterOption)
             self.GenerateReportTree('')
         dd.Destroy()
     
-    #Given a directory, list the reports and figure out which ones are present so that 
-    #the user can filter on a specific test name.    
+    #Given a directory, list the reports and figure out which ones are 
+    #present so that the user can filter on a specific test name.    
     def GenerateReportTree(self,filterTest):
         #Reset the directory if it already exists
         if self.report_tree.ItemHasChildren(self.report_tree.GetRootItem()):
@@ -94,7 +100,8 @@ class ProbixMainWindow(wx.Frame):
         if len(filterTest) > 0:
             #self.filterOption.DeleteAllItems()
             #Filter the tests in the directory by name
-            flist = filter(lambda s: s.find(filterTest.split('/')[1]) > -1, flist)
+            flist = filter(lambda s: s.find(filterTest.split('/')[1]) > -1, 
+                flist)
             #If such tests exist in the directory, reconstruct the report list
             #with only those tests.
             print 'in len(filterTest) > 0 if'
@@ -103,7 +110,8 @@ class ProbixMainWindow(wx.Frame):
                 self.report_root = self.report_tree.AddRoot('OONIProbe Report List')
                 for report in flist:
                     print 'appending report to tree'
-                    report_id = self.report_tree.AppendItem(self.report_root, report)
+                    report_id = self.report_tree.AppendItem(self.report_root, 
+                                                                      report)
                     self.report_tree.SetPyData(report_id,report)
 
         else:
@@ -115,13 +123,15 @@ class ProbixMainWindow(wx.Frame):
                     print 'in else-->if len(flist) > 0'
                     for report in flist:
                         print 'appended item ' + report
-                        report_id = self.report_tree.AppendItem(self.report_root, report)
+                        report_id = self.report_tree.AppendItem(self.report_root, 
+                                                                          report)
                         self.report_tree.SetPyData(report_id, report)		
         if self.filterOption.GetMenuItemCount() > 0:
             print 'generating filter by field(s) list'
             self.optionsMenu.DeleteItem(self.filterOption)
             self.filterOption = wx.Menu()
-            self.optionsMenu.AppendMenu(wx.ID_ANY, "Filter by Test Name", self.filterOption)
+            self.optionsMenu.AppendMenu(wx.ID_ANY, "Filter by Test Name", 
+                self.filterOption)
 
         self.GenerateFilterList(flist, self.filterOption.GetMenuItemCount())
         self.report_tree.ExpandAll()
@@ -129,7 +139,9 @@ class ProbixMainWindow(wx.Frame):
     #Lets the user select a specific .yamloo file and passes it to 
     #ProbixMainFrame for opening/parsing/analysis.
     def OnOpenReport(self,e):
-        fd = wx.FileDialog(self, "Select report to open", "", "", "YAML files (*.yamloo)|*.yamloo", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        fd = wx.FileDialog(self, "Select report to open", "", "", 
+            "YAML files (*.yamloo)|*.yamloo", 
+            wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if fd.ShowModal() == wx.ID_OK:
             self.statusBar.SetStatusText('Loading...')
             if self.report_window:
@@ -141,8 +153,10 @@ class ProbixMainWindow(wx.Frame):
             self.statusBar.SetStatusText('')		
 	    fd.Destroy()
 	
-    #Looks through the list of reports in the directory and searches against the master list of tests in probix_helpers.py
-    #If a given type of report exists, the option to filter out only that type is added to the "Filter on field(s)" option submenu
+    #Looks through the list of reports in the directory and searches against 
+    #the master list of tests in probix_helpers.py
+    #If a given type of report exists, the option to filter out only that 
+    #type is added to the "Filter on field(s)" option submenu
     def GenerateFilterList(self,fileList,oldItems):
         if oldItems > 0:
             for item in self.filterOption.GetMenuItems():
@@ -154,19 +168,21 @@ class ProbixMainWindow(wx.Frame):
             count = count - len(lst)
             if len(lst) > 0:
                 option = self.filterOption.Append(wx.ID_ANY, "&" + test, "")
-                self.Bind(wx.EVT_MENU,lambda evt, txt=test: self.OnFilterByTestName(evt,txt), option)
+                self.Bind(wx.EVT_MENU,
+                lambda evt, txt=test: self.OnFilterByTestName(evt,txt), option)
             if count == 0:
                 return		
 
-    #Event handler reconstructs the directory listing so that only the tests with a name matching testName show in the 
-    # report hierarchy
+    #Event handler reconstructs the directory listing so that only the tests 
+    #with a name matching testName show in the report hierarchy
     def OnFilterByTestName(self,e,testName):
         self.GenerateReportTree(self.working_directory, testName)
         self.report_tree.ExpandAll()
 	
     #Load the selected report
     def OnKeyClick(self,e):
-        val = os.path.join(self.working_directory, self.report_tree.GetPyData(e.GetItem()))
+        val = os.path.join(self.working_directory, 
+            self.report_tree.GetPyData(e.GetItem()))
         self.statusBar.SetStatusText('Loading...')
         if self.report_window:
             self.report_window.AddReport(val)
