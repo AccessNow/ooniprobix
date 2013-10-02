@@ -96,6 +96,7 @@ class ProbixMainWindow(wx.Frame):
 
         #Find all the .yamloo files in the current working directory
         flist = []
+        orig_flist = flist
         for file in os.listdir(self.working_directory):
             print 'checking directory'
             if file.endswith(".yamloo"):
@@ -151,18 +152,20 @@ class ProbixMainWindow(wx.Frame):
         #1. If we're just filtering an already opened directory, it doesn't make sense to change the list of tests in the 
         #filter by test name option.
         
-        #2. If we open a new directory, the current code block as it is failt to rebuild the filter by test name option.  There's a subproblem here.
+        #2. If we open a new directory, the current code block as it is fails to rebuild the filter by test name option.  There's a subproblem here.
         #2a. In the interest of keeping things nice and MVC, it might be a good idea to pass the job of reconstructing the options menu off to a
         #separate method.
 
         if self.filterOption.GetMenuItemCount() > 0 and len(filterTest) == 0:
             print 'generating filter by test name list'
-            self.optionsMenu.DeleteItem(self.filterOption)
-            self.filterOption = wx.Menu()
-            self.optionsMenu.AppendMenu(wx.ID_ANY, "Filter by Test Name", 
-                self.filterOption)
-
-        self.GenerateFilterList(flist, self.filterOption.GetMenuItemCount())
+#            self.filterOption.Destroy()
+#            self.optionsMenu.DeleteItem(self.optionsMenu.FindItem(self.filterOption))
+            for mItem in self.filterOption.GetMenuItems():
+                self.filterOption.DeleteItem(mItem)
+#            self.filterOption = wx.Menu()
+#            self.optionsMenu.AppendMenu(wx.ID_ANY, "Filter by Test Name", 
+#                self.filterOption)
+        self.GenerateFilterList(orig_flist, self.filterOption.GetMenuItemCount())
         self.report_tree.ExpandAll()
 
     #Lets the user select a specific .yamloo file and passes it to 
