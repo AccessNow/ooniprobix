@@ -28,6 +28,8 @@ import os
 from yamlreports import YAMLReport
 
 version_number = '0.0.4'
+colorize = False
+
 
 #Full catalog of tests currently supported by ooniprobe.  
 #Used to filter out specific types of tests
@@ -308,6 +310,7 @@ class ProbixReportWindow(wx.Panel):
         for header_key in header_keys:
             data = self.yfile.report_header[header_key]
             item = self.report_tree.AppendItem(self.header_root, unicode_clean(header_key))
+            self.AssignColor(item)
             if (type(data) is dict) and len(data) >= 1:
                 self.report_tree.SetItemHasChildren(item)
                 self.report_tree.SetPyData(item, ('nested data', False))
@@ -322,6 +325,14 @@ class ProbixReportWindow(wx.Panel):
                 (unicode_clean(self.yfile.report_header[header_key]), False))
 #		self.fstk.key_pop()
 
+    def AssignColor(self, item):
+        global colorize
+        if colorize:
+            self.report_tree.SetItemBackgroundColour(item, 
+                                                wx.NamedColour('LIGHT GREY'))
+            colorize=False
+        else:
+            colorize=True
     
     def LoadEntryTree(self):
         for entry in self.yfile.report_entries:
@@ -329,10 +340,12 @@ class ProbixReportWindow(wx.Panel):
                 if entry['input']:
                     item = self.report_tree.AppendItem(self.entry_root, 
                            unicode_clean(entry['input']))
+                    self.AssignColor(item)
 #	            self.fstk.key_push(entry['input'])
                 else:
                     item = self.report_tree.AppendItem(self.entry_root,
                         'Test Case')
+                    self.AssignColor(item)
 #	            self.fstk.key_push('Test Case')
                 self.report_tree.SetPyData(item, ('nested data', False))
                 self.report_tree.SetItemHasChildren(item)
@@ -347,6 +360,7 @@ class ProbixReportWindow(wx.Panel):
         for k in ckeys:
             if (type(child_dict[k]) is list or type(child_dict[k]) is set) and len(child_dict[k]) >= 1:
                 i = self.report_tree.AppendItem(parent, unicode_clean(k))
+                self.AssignColor(i)
                 self.report_tree.SetPyData(i, ('nested data', False))    
                 self.report_tree.SetItemHasChildren(i)
 #                self.fstk.key_push(k)
@@ -355,6 +369,7 @@ class ProbixReportWindow(wx.Panel):
 #		self.fstk.key_pop()
             elif type(child_dict[k]) is dict and len(child_dict[k]) >= 1:    
                 item = self.report_tree.AppendItem(parent, unicode_clean(k))
+                self.AssignColor(item)
                 self.report_tree.SetPyData(item, ('nested data', False))
                 self.report_tree.SetItemHasChildren(item)
 #                self.fstk.key_push(k)
@@ -363,6 +378,7 @@ class ProbixReportWindow(wx.Panel):
 #		self.fstk.key_pop()
             else:
                 i = self.report_tree.AppendItem(parent, unicode_clean(k).encode('unicode-escape'))
+                self.AssignColor(i)
                 if type(child_dict[k]) is str or type(child_dict[k]) is unicode:
                     self.report_tree.SetPyData(i, (unicode_clean(child_dict[k]), False))
 #	                self.fstk.key_push(k)
@@ -383,6 +399,7 @@ class ProbixReportWindow(wx.Panel):
                 val = unicode_clean(datum)
 #		    val = val.encode('unicode-escape')
                 i = self.report_tree.AppendItem(parent, str(child_clct.index(datum)))
+                self.AssignColor(i)
                 self.report_tree.SetPyData(i, (val, False))    
                 self.report_tree.SetItemHasChildren(i)
                 self.LoadRecursiveCollection(i, datum)
@@ -393,6 +410,7 @@ class ProbixReportWindow(wx.Panel):
                 val = unicode_clean(datum)
 #		    val = val.encode('unicode-escape')
                 item = self.report_tree.AppendItem(parent, str(child_clct.index(datum)))
+                self.AssignColor(item)
                 self.report_tree.SetPyData(item, (val, False))
                 self.report_tree.SetItemHasChildren(item)
                 self.LoadRecursiveDict(item, datum)
@@ -400,10 +418,12 @@ class ProbixReportWindow(wx.Panel):
                 if type(datum) is str or type(datum) is unicode:
                     i = self.report_tree.AppendItem(parent, 
                         unicode_clean(datum).encode('unicode-escape'))
+                    self.AssignColor(i)
                     self.report_tree.SetPyData(i, (unicode_clean(datum), False))	
                 else:
                     i = self.report_tree.AppendItem(parent, 
                         unicode_clean(datum).encode('unicode-escape'))
+                    self.AssignColor(i)
                     self.report_tree.SetPyData(i, (unicode_clean(datum), False))
 
 
@@ -426,13 +446,18 @@ class ProbixReportWindow(wx.Panel):
 
 class ProbixFilterWindow(wx.Frame):
     def __init__(self, parent, text):
-        wx.Frame.__init__(self, parent, title='OONIProbix - Filter Report Data', size=(400,600))
-        self.filter_text = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY, size=(400,500))
+        wx.Frame.__init__(self, parent, 
+                       title='OONIProbix - Filter Report Data',
+                       size=(400,600))
+        self.filter_text = wx.TextCtrl(self, 
+                              style = wx.TE_MULTILINE | wx.TE_READONLY,
+                              size=(400,500))
         self.filter_report = text
         #It's called ops_panel because it's where we put the button for various operations we want
         #to perform on the filtered data
         self.ops_panel = wx.Panel(self, wx.ID_ANY)
-        self.export_to_csv = wx.Button(self.ops_panel, -1, "Export CSV", (0,0))
+        self.export_to_csv = wx.Button(self.ops_panel, -1, 
+                                       "Export CSV", (0,0))
         self.export_to_csv.Bind(wx.EVT_BUTTON, self.OnExportToCSV)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -446,7 +471,8 @@ class ProbixFilterWindow(wx.Frame):
 
 
     def OnExportToCSV(self, e):
-        dlg = wx.FileDialog(self, "Export to CSV", os.getcwd(), '', '*.csv', wx.SAVE|wx.OVERWRITE_PROMPT)        
+        dlg = wx.FileDialog(self, "Export to CSV", os.getcwd(), 
+                            '', '*.csv', wx.SAVE|wx.OVERWRITE_PROMPT)        
         if dlg.ShowModal() == wx.ID_OK:
             filename = dlg.GetPath()
             f = open(filename, 'w')

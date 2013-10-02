@@ -131,7 +131,8 @@ class ProbixMainWindow(wx.Frame):
                     
                     self.report_tree.SetPyData(report_id, report)		
                     if colorize:
-                        self.report_tree.SetItemBackgroundColour(report_id,wx.NamedColour('LIGHT GREY'))
+                        self.report_tree.SetItemBackgroundColour(report_id,
+                                              wx.NamedColour('LIGHT GREY'))
                         colorize=False
                     else:
                         colorize=True                    
