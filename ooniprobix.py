@@ -93,12 +93,15 @@ class ProbixMainWindow(wx.Frame):
         if self.report_tree.ItemHasChildren(self.report_tree.GetRootItem()):
             print 'Clearing report tree'
             self.report_tree.DeleteAllItems()
+
+        #Find all the .yamloo files in the current working directory
         flist = []
         for file in os.listdir(self.working_directory):
             print 'checking directory'
             if file.endswith(".yamloo"):
                 flist.append(file)
                 print 'added file ' + file + ' to report hierarchy'
+
         #If we are trying to display only certain types of tests
         if len(filterTest) > 0:
             #self.filterOption.DeleteAllItems()
@@ -117,6 +120,8 @@ class ProbixMainWindow(wx.Frame):
                                                                       report)
                     self.report_tree.SetPyData(report_id,report)
 
+        #If we are NOT trying to display only certain types of tests,
+        #just load all of them
         else:
 #           self.filterOption.Enable(True)
             #self.filterOption.DeleteAllItems()
@@ -137,8 +142,21 @@ class ProbixMainWindow(wx.Frame):
                     else:
                         colorize=True                    
 
-        if self.filterOption.GetMenuItemCount() > 0:
-            print 'generating filter by field(s) list'
+        #If we just opened the directory (i.e. there is no test specified to
+        #filter on, delete the old Filter by Test Name option (doesn't work yet)
+        #and call GenerateFilterList to add the filter options
+
+        #PROBLEM BRO: Well, more than one problem:
+     
+        #1. If we're just filtering an already opened directory, it doesn't make sense to change the list of tests in the 
+        #filter by test name option.
+        
+        #2. If we open a new directory, the current code block as it is failt to rebuild the filter by test name option.  There's a subproblem here.
+        #2a. In the interest of keeping things nice and MVC, it might be a good idea to pass the job of reconstructing the options menu off to a
+        #separate method.
+
+        if self.filterOption.GetMenuItemCount() > 0 and len(filterTest) == 0:
+            print 'generating filter by test name list'
             self.optionsMenu.DeleteItem(self.filterOption)
             self.filterOption = wx.Menu()
             self.optionsMenu.AppendMenu(wx.ID_ANY, "Filter by Test Name", 
@@ -187,7 +205,7 @@ class ProbixMainWindow(wx.Frame):
     #Event handler reconstructs the directory listing so that only the tests 
     #with a name matching testName show in the report hierarchy
     def OnFilterByTestName(self,e,testName):
-        self.GenerateReportTree(self.working_directory, testName)
+        self.GenerateReportTree(testName)
         self.report_tree.ExpandAll()
 	
     #Load the selected report
