@@ -470,8 +470,10 @@ class ProbixFilterWindow(wx.Frame):
         for row in text:
             split_row = row.split(',')
             self.filter_text.InsertStringItem(index=index, label = split_row[0])
+
             if index % 2:
                 self.filter_text.SetItemBackgroundColour(index,wx.NamedColour('LIGHT GREY'))
+
             for datum in split_row:
                 print 'Inserting item ' + datum + ' at index ' + str(split_row.index(datum))
                 self.filter_text.SetStringItem(index,split_row.index(datum),datum)
