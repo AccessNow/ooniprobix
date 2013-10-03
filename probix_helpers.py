@@ -189,7 +189,7 @@ class ProbixMainFrame(wx.Frame):
             #print 'Type of e: ' + str(e)
             #print 'Type of e.GetSelection(): ' + str(e.GetSelection())
             report = self.notebook.GetPage(self.notebook.GetSelection()).GenerateFilteredEntryList(filter)
-            reportDialog = ProbixFilterWindow(self,report)
+            reportDialog = ProbixFilterWindow(self, filter, report)
 
 
 #Out multi-tab class injerited from wx.Notebook
@@ -245,15 +245,16 @@ class ProbixReportWindow(wx.Panel):
     def MaxLen(self):
         print 'Error!  Text exceeds max TextCtrl size!'
 
-    #TO-DO: Right now this only filters on fields that are one layer deep
-    #Refactor this to recurse into the structure
+    #given a formatted string of (recursive and non-recursive) fields to 
+    #filter on, return a list with the appropriate values for each entry.
     def GenerateFilteredEntryList(self, filter_text):
 	#Generate some headers for the filtered report
 	#We're looking at the name of the text and the schema used
-        filtered_list_text = ''
-        list_header = self.filename + '\n'
+#        filtered_list_text = ''
+        filtered_list_text = []
+        list_header = self.filename + ' '
         list_header += filter_text + '\n'
-        filtered_list_text += list_header
+        filtered_list_text.append(list_header)
 	
 	#We want to separate out what is one level down in the entry structure
 	#and what we have to "recurse" to get to
@@ -302,7 +303,7 @@ class ProbixReportWindow(wx.Panel):
                     print 'Done with field ' + field
 	            print 'printing newline'
 	        row_text += '\n'
-                filtered_list_text += row_text
+                filtered_list_text.append(row_text)
         return filtered_list_text
 
     def LoadHeaderTree(self):
@@ -445,13 +446,37 @@ class ProbixReportWindow(wx.Panel):
 #        print len(val)
 
 class ProbixFilterWindow(wx.Frame):
-    def __init__(self, parent, text):
+    def __init__(self, parent, columns, text):
+        self.report_title = os.path.basename(text[0].split(' ')[0])
+        self.columns = columns
         wx.Frame.__init__(self, parent, 
-                       title='OONIProbix - Filter Report Data',
-                       size=(400,600))
-        self.filter_text = wx.TextCtrl(self, 
-                              style = wx.TE_MULTILINE | wx.TE_READONLY,
-                              size=(400,500))
+                 title=self.report_title + ' - OONIProbix - Filter Report Data',
+                 size=(400,600))
+        text.remove(text[0])
+        self.rtext=text
+#        self.filter_text = wx.TextCtrl(self, 
+#                              style = wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH,
+#                              size=(400,500))
+        self.filter_text = wx.ListCtrl(self, wx.ID_ANY, style = wx.LC_REPORT,size=(550,350))        
+        columns_lst = columns.split(',')
+        print columns_lst
+        index = 0
+
+        for column in columns_lst:
+            i = columns_lst.index(column)
+            self.filter_text.InsertColumn(i,column)
+            self.filter_text.SetColumnWidth(i,200)
+
+        for row in text:
+            split_row = row.split(',')
+            self.filter_text.InsertStringItem(index=index, label = split_row[0])
+            if index % 2:
+                self.filter_text.SetItemBackgroundColour(index,wx.NamedColour('LIGHT GREY'))
+            for datum in split_row:
+                print 'Inserting item ' + datum + ' at index ' + str(split_row.index(datum))
+                self.filter_text.SetStringItem(index,split_row.index(datum),datum)
+            index += 1
+
         self.filter_report = text
         #It's called ops_panel because it's where we put the button for various operations we want
         #to perform on the filtered data
@@ -466,9 +491,16 @@ class ProbixFilterWindow(wx.Frame):
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
         self.sizer.Fit(self)
-        self.filter_text.SetValue(text)
+#        self.filter_text.SetValue(text)
         self.Show(True)
 
+    def GenerateCSVString(self):
+        csv_string = ''
+        csv_string += self.report_title + '\n'
+        csv_string += self.columns + '\n'
+        for row in self.rtext:
+            csv_string += row
+        return csv_string
 
     def OnExportToCSV(self, e):
         dlg = wx.FileDialog(self, "Export to CSV", os.getcwd(), 
@@ -476,5 +508,5 @@ class ProbixFilterWindow(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             filename = dlg.GetPath()
             f = open(filename, 'w')
-            f.write(self.filter_report)
+            f.write(self.GenerateCSVString())
         dlg.Destroy()        
