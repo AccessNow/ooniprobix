@@ -91,17 +91,17 @@ class ProbixMainWindow(wx.Frame):
         global colorize
         #Reset the directory if it already exists
         if self.report_tree.ItemHasChildren(self.report_tree.GetRootItem()):
-            print 'Clearing report tree'
+#            print 'Clearing report tree'
             self.report_tree.DeleteAllItems()
 
         #Find all the .yamloo files in the current working directory
         flist = []
         orig_flist = flist
         for file in os.listdir(self.working_directory):
-            print 'checking directory'
+#            print 'checking directory'
             if file.endswith(".yamloo"):
                 flist.append(file)
-                print 'added file ' + file + ' to report hierarchy'
+#                print 'added file ' + file + ' to report hierarchy'
 
         #If we are trying to display only certain types of tests
         if len(filterTest) > 0:
@@ -111,12 +111,12 @@ class ProbixMainWindow(wx.Frame):
                 flist)
             #If such tests exist in the directory, reconstruct the report list
             #with only those tests.
-            print 'in len(filterTest) > 0 if'
+#            print 'in len(filterTest) > 0 if'
             if len(flist) > 0:
-                print 'in len(flist) > 0 if'
+#                print 'in len(flist) > 0 if'
                 self.report_root = self.report_tree.AddRoot('OONIProbe Report List')
                 for report in flist:
-                    print 'appending report to tree'
+#                    print 'appending report to tree'
                     report_id = self.report_tree.AppendItem(self.report_root, 
                                                                       report)
                     self.report_tree.SetPyData(report_id,report)
@@ -126,12 +126,12 @@ class ProbixMainWindow(wx.Frame):
         else:
 #           self.filterOption.Enable(True)
             #self.filterOption.DeleteAllItems()
-            print 'in else'
+#            print 'in else'
             self.report_root = self.report_tree.AddRoot('OONIProbe Report List')
             if len(flist) > 0:
-                print 'in else-->if len(flist) > 0'
+#                print 'in else-->if len(flist) > 0'
                 for report in flist:
-                    print 'appended item ' + report
+#                    print 'appended item ' + report
                     report_id = self.report_tree.AppendItem(self.report_root, 
                                                                       report)
                     
@@ -147,17 +147,11 @@ class ProbixMainWindow(wx.Frame):
         #filter on, delete the old Filter by Test Name option (doesn't work yet)
         #and call GenerateFilterList to add the filter options
 
-        #PROBLEM BRO: Well, more than one problem:
-     
-        #1. If we're just filtering an already opened directory, it doesn't make sense to change the list of tests in the 
-        #filter by test name option.
-        
-        #2. If we open a new directory, the current code block as it is fails to rebuild the filter by test name option.  There's a subproblem here.
-        #2a. In the interest of keeping things nice and MVC, it might be a good idea to pass the job of reconstructing the options menu off to a
-        #separate method.
+        #PROBLEM BRO: In the interest of keeping things nice and MVC, it might be a good idea to pass the job of reconstructing 
+        #the options menu off to a separate method.
 
         if self.filterOption.GetMenuItemCount() > 0 and len(filterTest) == 0:
-            print 'generating filter by test name list'
+#            print 'generating filter by test name list'
 #            self.filterOption.Destroy()
 #            self.optionsMenu.DeleteItem(self.optionsMenu.FindItem(self.filterOption))
             for mItem in self.filterOption.GetMenuItems():

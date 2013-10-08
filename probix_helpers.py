@@ -86,21 +86,22 @@ def unicode_clean(string):
     else:
         return str(string)
 
-#This is something of a debug class to follow along whenever 
+#A list-based stack that follows along whenever 
 #OONIProbix runs through a report to 
 #Generate the report hierarchy.
-#class FilterStack():
-#	def __init__(self):
-#		self.stk = []
-#
-#	def key_push(self,k):
-#		self.stk.append(k)
-#
-#	def key_pop(self):
-#		del self.stk[-1]
-#
-#	def dump_stack(self):
-#		print self.stk
+#Used for the drop-down menu when we want to filter on specific fields
+class FilterStack():
+	def __init__(self):
+		self.stk = []
+
+	def key_push(self,k):
+		self.stk.append(k)
+
+	def key_pop(self):
+		del self.stk[-1]
+
+	def dump_stack(self):
+		return self.stk
 
 class ProbixMainFrame(wx.Frame):
     def __init__(self, parent, report):
@@ -180,8 +181,8 @@ class ProbixMainFrame(wx.Frame):
 
     #Brings up the entry filter dialog
     def OnFilterEntries(self, e):
-        #TO-DO: Subject this dialog to various and sundry fuzzing tests perhaps?
-        filterDialog = wx.TextEntryDialog(None, 'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', style=wx.OK | wx.CANCEL)
+        cboxlst = self.notebook.GetPage(self.notebook.GetSelection()).combo_box_list
+        filterDialog = ProbixFilterDialog(self, 'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', cboxlst)
         if filterDialog.ShowModal() == wx.ID_OK:
             filter = filterDialog.GetValue()
             #print 'Value of filter: ' + filter
@@ -190,6 +191,56 @@ class ProbixMainFrame(wx.Frame):
             #print 'Type of e.GetSelection(): ' + str(e.GetSelection())
             report = self.notebook.GetPage(self.notebook.GetSelection()).GenerateFilteredEntryList(filter)
             reportDialog = ProbixFilterWindow(self, filter, report)
+        
+
+        #--------------[OLD pre-UI/UX enhancement version]-----------------
+        #TO-DO: Subject this dialog to various and sundry fuzzing tests perhaps?
+#        filterDialog = wx.TextEntryDialog(None, 'Enter field(s) to filter on (comma-separated for multiple fields)','Entry Filter', style = wx.OK | wx.CANCEL)
+#        if filterDialog.ShowModal() == wx.ID_OK:
+#            filter = filterDialog.GetValue()
+#            #print 'Value of filter: ' + filter
+#            filterDialog.Destroy()
+            #print 'Type of e: ' + str(e)
+            #print 'Type of e.GetSelection(): ' + str(e.GetSelection())
+#            report = self.notebook.GetPage(self.notebook.GetSelection()).GenerateFilteredEntryList(filter)
+#            reportDialog = ProbixFilterWindow(self, filter, report)
+
+#Customized dialog window to handle filtering entries.
+#Currently contains just a TextCtrl, ComboBox, and OK/Cancel buttons, but
+#may be extended as necessary.
+class ProbixFilterDialog(wx.Dialog):
+    def __init__(self, parent, caption, title, cboxlst):
+#        style = wx.DEFAULT_DIALOG_STYLE
+        super(ProbixFilterDialog, self).__init__(parent, -1, title, size=(300,500))
+        
+        text = wx.StaticText(self, wx.ID_ANY, caption)
+        
+        self.filter_input = wx.TextCtrl(self, wx.ID_ANY, size=(200,30))
+
+        cbox_choices = ['Select fields to filter']
+        cbox_choices.extend(cboxlst)
+        self.cbox = wx.ComboBox(self,id = wx.ID_ANY,value=cbox_choices[0], choices=cbox_choices, style=wx.CB_DROPDOWN)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        buttons = self.CreateButtonSizer(wx.OK|wx.CANCEL)
+        sizer.Add(text)
+        sizer.Add(self.filter_input)
+        sizer.Add(buttons, wx.ALIGN_RIGHT)
+        sizer.Add(self.cbox, wx.ALIGN_LEFT)
+        self.SetSizerAndFit(sizer)
+       
+
+        self.Bind(wx.EVT_COMBOBOX, self.AddToTextCtrl, self.cbox)
+
+
+    def GetValue(self):
+        return self.filter_input.GetValue()
+
+    def AddToTextCtrl(self, e):
+        if len(self.filter_input.GetValue()) > 0:
+            self.filter_input.SetValue(self.filter_input.GetValue() + ','  + self.cbox.GetValue())          
+        else:
+            self.filter_input.SetValue(self.filter_input.GetValue() + self.cbox.GetValue())
 
 
 #Out multi-tab class injerited from wx.Notebook
@@ -198,7 +249,7 @@ class ProbixNotebook(wx.Notebook):
         wx.Notebook.__init__(self,parent, id=wx.ID_ANY, style=wx.BK_TOP,
             size=(800,600))
         text = os.path.basename(report) + " - OONIProbix " + version_number
-        print 'Building report window'        
+#        print 'Building report window'        
         self.AddPage(ProbixReportWindow(self, text, report), text)
 
 #The part of the program that constructs the nested hierarchy with the data field display.
@@ -219,7 +270,9 @@ class ProbixReportWindow(wx.Panel):
 
         self.report_data = wx.TextCtrl(self, style = wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_CHARWRAP, size=(450,550))
 #        self.report_data.SetMaxLength(0)
-#	self.fstk = FilterStack()
+
+	self.fstk = FilterStack()
+        self.combo_box_list = []
 
         #Let's size this up *badumtish*
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -267,7 +320,7 @@ class ProbixReportWindow(wx.Panel):
                 row_text = ''
                 data = entry
                 for field in filter_text:
-                    print 'Value of field: ' + field
+#                    print 'Value of field: ' + field
                     if '.' in field:
                         #print 'With field ' + field
                         flist = field.split('.')
@@ -364,33 +417,44 @@ class ProbixReportWindow(wx.Panel):
                 self.AssignColor(i)
                 self.report_tree.SetPyData(i, ('nested data', False))    
                 self.report_tree.SetItemHasChildren(i)
-#                self.fstk.key_push(k)
+                self.fstk.key_push(k)
 #		self.fstk.dump_stack()
                 self.LoadRecursiveCollection(i, child_dict[k])
-#		self.fstk.key_pop()
+		self.fstk.key_pop()
             elif type(child_dict[k]) is dict and len(child_dict[k]) >= 1:    
                 item = self.report_tree.AppendItem(parent, unicode_clean(k))
                 self.AssignColor(item)
                 self.report_tree.SetPyData(item, ('nested data', False))
                 self.report_tree.SetItemHasChildren(item)
-#                self.fstk.key_push(k)
+                self.fstk.key_push(k)
 #		self.fstk.dump_stack()
                 self.LoadRecursiveDict(item, child_dict[k])
-#		self.fstk.key_pop()
+		self.fstk.key_pop()
             else:
                 i = self.report_tree.AppendItem(parent, unicode_clean(k).encode('unicode-escape'))
                 self.AssignColor(i)
                 if type(child_dict[k]) is str or type(child_dict[k]) is unicode:
                     self.report_tree.SetPyData(i, (unicode_clean(child_dict[k]), False))
-#	                self.fstk.key_push(k)
+                    self.fstk.key_push(k)
+
+                    base_string = '.'.join(self.fstk.dump_stack())
+                    if base_string not in self.combo_box_list:
+                        self.combo_box_list.append(base_string)
+
 #			self.fstk.dump_stack()
 #	                self.report_tree.SetPyData(i,(child_dict[k],False))
-#			self.fstk.key_pop()
+                    self.fstk.key_pop()
                 else:	
-#        	        self.fstk.key_push(k)
+                    self.fstk.key_push(k)
+
+                    base_string = '.'.join(self.fstk.dump_stack())
+                    if base_string not in self.combo_box_list:
+                        self.combo_box_list.append(base_string)
+
 #			self.fstk.dump_stack()
-                    self.report_tree.SetPyData(i, (unicode_clean(child_dict[k]), False))
-#			self.fstk.key_pop()
+                    self.report_tree.SetPyData(i, 
+                                     (unicode_clean(child_dict[k]), False))
+                    self.fstk.key_pop()
 
     def LoadRecursiveCollection(self, parent, child_clct):
         for datum in child_clct:
@@ -449,6 +513,8 @@ class ProbixFilterWindow(wx.Frame):
     def __init__(self, parent, columns, text):
         self.report_title = os.path.basename(text[0].split(' ')[0])
         self.columns = columns
+        self.entry_model = parent.combo_box_list
+
         wx.Frame.__init__(self, parent, 
                  title=self.report_title + ' - OONIProbix - Filter Report Data',
                  size=(400,600))
@@ -459,7 +525,7 @@ class ProbixFilterWindow(wx.Frame):
 #                              size=(400,500))
         self.filter_text = wx.ListCtrl(self, wx.ID_ANY, style = wx.LC_REPORT,size=(550,350))        
         columns_lst = columns.split(',')
-        print columns_lst
+#        print columns_lst
         index = 0
 
         for column in columns_lst:
@@ -475,13 +541,15 @@ class ProbixFilterWindow(wx.Frame):
                 self.filter_text.SetItemBackgroundColour(index,wx.NamedColour('LIGHT GREY'))
 
             for datum in split_row:
-                print 'Inserting item ' + datum + ' at index ' + str(split_row.index(datum))
+#                print 'Inserting item ' + datum + ' at index ' + str(split_row.index(datum))
                 self.filter_text.SetStringItem(index,split_row.index(datum),datum)
             index += 1
 
         self.filter_report = text
+
         #It's called ops_panel because it's where we put the button for various operations we want
         #to perform on the filtered data
+
         self.ops_panel = wx.Panel(self, wx.ID_ANY)
         self.export_to_csv = wx.Button(self.ops_panel, -1, 
                                        "Export CSV", (0,0))
