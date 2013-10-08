@@ -211,7 +211,7 @@ class ProbixMainFrame(wx.Frame):
 class ProbixFilterDialog(wx.Dialog):
     def __init__(self, parent, caption, title, cboxlst):
 #        style = wx.DEFAULT_DIALOG_STYLE
-        super(ProbixFilterDialog, self).__init__(parent, -1, title, size=(300,500))
+        super(ProbixFilterDialog, self).__init__(parent, -1, title, size=(500,300))
         
         text = wx.StaticText(self, wx.ID_ANY, caption)
         
@@ -219,14 +219,14 @@ class ProbixFilterDialog(wx.Dialog):
 
         cbox_choices = ['Select fields to filter']
         cbox_choices.extend(cboxlst)
-        self.cbox = wx.ComboBox(self,id = wx.ID_ANY,value=cbox_choices[0], choices=cbox_choices, style=wx.CB_DROPDOWN)
+        self.cbox = wx.ComboBox(self,id = wx.ID_ANY,value=cbox_choices[0], choices=cbox_choices, style=wx.CB_DROPDOWN | wx.CB_READONLY | wx.CB_SORT)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         buttons = self.CreateButtonSizer(wx.OK|wx.CANCEL)
         sizer.Add(text)
         sizer.Add(self.filter_input)
-        sizer.Add(buttons, wx.ALIGN_RIGHT)
-        sizer.Add(self.cbox, wx.ALIGN_LEFT)
+        sizer.Add(buttons, wx.RIGHT)
+        sizer.Add(self.cbox, wx.LEFT)
         self.SetSizerAndFit(sizer)
        
 
@@ -467,7 +467,9 @@ class ProbixReportWindow(wx.Panel):
                 self.AssignColor(i)
                 self.report_tree.SetPyData(i, (val, False))    
                 self.report_tree.SetItemHasChildren(i)
+                self.fstk.key_push(str(child_clct.index(datum)))
                 self.LoadRecursiveCollection(i, datum)
+                self.fstk.key_pop()
             elif type(datum) is dict and len(datum) >= 1:    
                 #Problem: Collection --> dict without handy key
 #                print 'Datum: ' + str(datum)
@@ -478,7 +480,9 @@ class ProbixReportWindow(wx.Panel):
                 self.AssignColor(item)
                 self.report_tree.SetPyData(item, (val, False))
                 self.report_tree.SetItemHasChildren(item)
+                self.fstk.key_push(str(child_clct.index(datum)))
                 self.LoadRecursiveDict(item, datum)
+                self.fstk.key_pop()
             else:
                 if type(datum) is str or type(datum) is unicode:
                     i = self.report_tree.AppendItem(parent, 
@@ -513,7 +517,7 @@ class ProbixFilterWindow(wx.Frame):
     def __init__(self, parent, columns, text):
         self.report_title = os.path.basename(text[0].split(' ')[0])
         self.columns = columns
-        self.entry_model = parent.combo_box_list
+#        self.entry_model = parent.combo_box_list
 
         wx.Frame.__init__(self, parent, 
                  title=self.report_title + ' - OONIProbix - Filter Report Data',
