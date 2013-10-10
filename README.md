@@ -34,12 +34,9 @@ the same window in a different tab.
 Filtering multiple entries
 ==========================
 
-If you have a report with a lot of entries in it (e.g. an http_requests/tcp-connect test 
-that checks for blocking/resets of multiple sites), select "Filter on field(s)" from the Options menu to generate a report with just 
-the values of certain variables in the hierarchy for each entry.  
-For example, if we're looking at a large http_requests test report with a 
-lot of sites, you can generate a report that lists the URL each entry 
-tried to test with the body proportion field for each site by typing in input,report.body_proportion.  
+If you have a report with a lot of entries in it (e.g. an http_requests/tcp-connect test that checks for blocking/resets of multiple sites), select "Filter on field(s)" from the Options menu to generate a report with just 
+the values of certain variables in the hierarchy for each entry.  For example, if we're looking at a large http_requests test report with a 
+lot of sites, you can generate a report that lists the URL each entry tried to test with the body proportion field for each site by typing in input,report.body_proportion.  
 The general syntax is:
 
 top_item1,top_item2,top_item3.sub_a.sub_b
