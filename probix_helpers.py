@@ -91,17 +91,19 @@ def unicode_clean(string):
 #Generate the report hierarchy.
 #Used for the drop-down menu when we want to filter on specific fields
 class FilterStack():
-	def __init__(self):
-		self.stk = []
+    def __init__(self):
+        self.stk = []
 
-	def key_push(self,k):
-		self.stk.append(k)
+    def key_push(self,k):
+        t = type(k)
+        if type(t) is not str or type(t) is not unicode:
+            self.stk.append(unicode(k))
 
-	def key_pop(self):
-		del self.stk[-1]
+    def key_pop(self):
+        del self.stk[-1]
 
-	def dump_stack(self):
-		return self.stk
+    def dump_stack(self):
+        return self.stk
 
 class ProbixMainFrame(wx.Frame):
     def __init__(self, parent, report):
@@ -387,7 +389,14 @@ class ProbixReportWindow(wx.Panel):
             colorize=False
         else:
             colorize=True
-    
+
+    def FlipColorize(self):
+        global colorize
+        if colorize:
+            colorize=False
+        else:
+            colorize=True
+
     def LoadEntryTree(self):
         for entry in self.yfile.report_entries:
             if entry:
@@ -422,13 +431,13 @@ class ProbixReportWindow(wx.Panel):
                 self.LoadRecursiveCollection(i, child_dict[k])
 		self.fstk.key_pop()
             elif type(child_dict[k]) is dict and len(child_dict[k]) >= 1:    
-                item = self.report_tree.AppendItem(parent, unicode_clean(k))
-                self.AssignColor(item)
-                self.report_tree.SetPyData(item, ('nested data', False))
-                self.report_tree.SetItemHasChildren(item)
+                i = self.report_tree.AppendItem(parent, unicode_clean(k))
+                self.AssignColor(i)
+                self.report_tree.SetPyData(i, ('nested data', False))
+                self.report_tree.SetItemHasChildren(i)
                 self.fstk.key_push(k)
 #		self.fstk.dump_stack()
-                self.LoadRecursiveDict(item, child_dict[k])
+                self.LoadRecursiveDict(i, child_dict[k])
 		self.fstk.key_pop()
             else:
                 i = self.report_tree.AppendItem(parent, unicode_clean(k).encode('unicode-escape'))
@@ -436,8 +445,10 @@ class ProbixReportWindow(wx.Panel):
                 if type(child_dict[k]) is str or type(child_dict[k]) is unicode:
                     self.report_tree.SetPyData(i, (unicode_clean(child_dict[k]), False))
                     self.fstk.key_push(k)
-
-                    base_string = '.'.join(self.fstk.dump_stack())
+                    try:
+                        base_string = '.'.join(self.fstk.dump_stack())
+                    except Exception:
+                        print 'self.fstk.dump_stack() value: ' + str(self.fstk.dump_stack())
                     if base_string not in self.combo_box_list:
                         self.combo_box_list.append(base_string)
 
@@ -455,6 +466,10 @@ class ProbixReportWindow(wx.Panel):
                     self.report_tree.SetPyData(i, 
                                      (unicode_clean(child_dict[k]), False))
                     self.fstk.key_pop()
+        parent = self.report_tree.GetItemParent(i)
+        if self.report_tree.GetItemBackgroundColour(i) != self.report_tree.GetItemBackgroundColour(parent):
+            self.FlipColorize()
+        
 
     def LoadRecursiveCollection(self, parent, child_clct):
         for datum in child_clct:
