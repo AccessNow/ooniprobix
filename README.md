@@ -17,7 +17,7 @@ git clone https://github.com/AccessNow/ooniprobix.git
 cd ooniprobix
 sudo apt-get install libyaml-0-2 python-yaml python-wxgtk2.8
 
-To run the program, type the following:
+To run the program, type:
 python ooniprobix.py
 ~~~
 
@@ -26,8 +26,7 @@ Basic usage
 ===========
 
 When OONIProbix starts, the main window lets you open a specific 
-report file (Under "File") or a directory of report files (see screenshot 
-"directory_list.png").  You can double click any of the reports to load 
+report file (Under "File") or a directory of report files.  You can double click any of the reports to load 
 them in a new window, and clicking a different report will bring it up in 
 the same window in a different tab.  
 
