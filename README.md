@@ -7,7 +7,8 @@ Cross-platform GUI for OONIProbe report analysis
 Installation from source, Debian Wheezy
 =======================================
 
-OONIProbix has been successfully tested on Debian Wheezy running Python 
+OONIProbix has been successfully tested on Debian Wheezy.  
+
 After cloning our repo, you can download all the necessary librarires via apt-get 
 
 ~~~
