@@ -102,7 +102,9 @@ class ProbixMainWindow(wx.Frame):
             if file.endswith(".yamloo"):
                 flist.append(file)
 #                print 'added file ' + file + ' to report hierarchy'
-
+        
+        flist.sort()
+        
         #If we are trying to display only certain types of tests
         if len(filterTest) > 0:
             #self.filterOption.DeleteAllItems()
